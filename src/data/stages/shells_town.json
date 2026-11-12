@@ -1,0 +1,31 @@
+{
+  "id": "shells_town",
+  "order": 1,
+  "name": "Shells Town",
+  "desc": "A Marine base town in the East Blue. Harbour water dots the streets. Tutorial stage: no hazards.",
+  "durationSec": 1200,
+  "hpScalePerMin": 0.12,
+  "eliteChance": 0.004,
+  "ground": { "base": "#c9b98a", "detail": "#b8a776" },
+  "terrain": [{ "type": "water", "scale": 420, "threshold": 0.74, "seed": 11 }],
+  "hazards": [],
+  "segments": [
+    { "from": 0, "to": 60, "rate": 1.2, "maxAlive": 40, "enemies": [{ "id": "marine_recruit", "weight": 1 }] },
+    { "from": 60, "to": 180, "rate": 2.0, "maxAlive": 80, "enemies": [{ "id": "marine_recruit", "weight": 2 }, { "id": "pirate_grunt", "weight": 1 }] },
+    { "from": 180, "to": 300, "rate": 3.0, "maxAlive": 120, "enemies": [{ "id": "marine_recruit", "weight": 2 }, { "id": "pirate_grunt", "weight": 2 }, { "id": "sea_cat", "weight": 1 }] },
+    { "from": 300, "to": 480, "rate": 4.0, "maxAlive": 160, "enemies": [{ "id": "pirate_grunt", "weight": 3 }, { "id": "sea_cat", "weight": 2 }, { "id": "musket_marine", "weight": 1 }] },
+    { "from": 480, "to": 600, "rate": 5.0, "maxAlive": 200, "enemies": [{ "id": "pirate_grunt", "weight": 3 }, { "id": "sea_cat", "weight": 2 }, { "id": "musket_marine", "weight": 2 }, { "id": "blugori", "weight": 1 }] },
+    { "from": 600, "to": 900, "rate": 6.5, "maxAlive": 260, "enemies": [{ "id": "pirate_grunt", "weight": 3 }, { "id": "sea_cat", "weight": 3 }, { "id": "musket_marine", "weight": 2 }, { "id": "blugori", "weight": 1 }] },
+    { "from": 900, "to": 1200, "rate": 8.0, "maxAlive": 320, "enemies": [{ "id": "pirate_grunt", "weight": 2 }, { "id": "sea_cat", "weight": 3 }, { "id": "musket_marine", "weight": 3 }, { "id": "blugori", "weight": 2 }] }
+  ],
+  "events": [
+    { "at": 120, "type": "ring", "enemy": "marine_recruit", "count": 36 },
+    { "at": 270, "type": "stampede", "enemy": "sea_cat", "count": 30 },
+    { "at": 420, "type": "ring", "enemy": "pirate_grunt", "count": 48 },
+    { "at": 600, "type": "boss", "enemy": "morgan", "count": 1, "role": "mid" },
+    { "at": 750, "type": "stampede", "enemy": "sea_cat", "count": 50 },
+    { "at": 900, "type": "ring", "enemy": "musket_marine", "count": 40 },
+    { "at": 1080, "type": "stampede", "enemy": "blugori", "count": 30 },
+    { "at": 1200, "type": "boss", "enemy": "arlong", "count": 1, "role": "final" }
+  ]
+}

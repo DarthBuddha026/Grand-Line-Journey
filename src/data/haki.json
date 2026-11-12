@@ -1,0 +1,38 @@
+[
+  { "id": "future_sight", "slot": "observation", "name": "Future Sight", "levels": [
+    { "desc": "5% auto-dodge chance.", "mods": { "dodge": 0.05 } },
+    { "desc": "8% auto-dodge chance.", "mods": { "dodge": 0.08 } },
+    { "desc": "12% auto-dodge chance.", "mods": { "dodge": 0.12 } } ] },
+  { "id": "early_warning", "slot": "observation", "name": "Early Warning", "levels": [
+    { "desc": "Boss telegraphs show 0.2 s earlier.", "mods": { "telegraphLead": 0.2 } },
+    { "desc": "0.35 s earlier, +5% speed.", "mods": { "telegraphLead": 0.35 }, "stats": [{ "stat": "spd", "pct": 0.05 }] },
+    { "desc": "0.5 s earlier, +8% speed.", "mods": { "telegraphLead": 0.5 }, "stats": [{ "stat": "spd", "pct": 0.08 }] } ] },
+  { "id": "keen_senses", "slot": "observation", "name": "Keen Senses", "levels": [
+    { "desc": "See elites and bosses off-screen; +3% crit.", "mods": { "eliteRadar": 1 }, "stats": [{ "stat": "crit", "flat": 0.03 }] },
+    { "desc": "+5% crit.", "mods": { "eliteRadar": 1 }, "stats": [{ "stat": "crit", "flat": 0.05 }] },
+    { "desc": "+8% crit.", "mods": { "eliteRadar": 1 }, "stats": [{ "stat": "crit", "flat": 0.08 }] } ] },
+  { "id": "hardened_fist", "slot": "armament", "name": "Hardened Fist", "levels": [
+    { "desc": "+10% damage to tanks, elites and bosses.", "mods": { "tankDmg": 0.1 } },
+    { "desc": "+20% damage to tanks, elites and bosses.", "mods": { "tankDmg": 0.2 } },
+    { "desc": "+30% damage to tanks, elites and bosses.", "mods": { "tankDmg": 0.3 } } ] },
+  { "id": "coating", "slot": "armament", "name": "Coating", "levels": [
+    { "desc": "Your first hit on each enemy deals +50% damage.", "mods": { "firstHitBonus": 0.5 } },
+    { "desc": "+75% first-hit damage.", "mods": { "firstHitBonus": 0.75 } },
+    { "desc": "+100% first-hit damage.", "mods": { "firstHitBonus": 1.0 } } ] },
+  { "id": "heavy_blows", "slot": "armament", "name": "Heavy Blows", "levels": [
+    { "desc": "+30% knockback, +3% damage.", "mods": { "knockbackMul": 0.3 }, "stats": [{ "stat": "atk", "pct": 0.03 }] },
+    { "desc": "+60% knockback, +6% damage.", "mods": { "knockbackMul": 0.6 }, "stats": [{ "stat": "atk", "pct": 0.06 }] },
+    { "desc": "+100% knockback, +10% damage.", "mods": { "knockbackMul": 1.0 }, "stats": [{ "stat": "atk", "pct": 0.1 }] } ] },
+  { "id": "kings_aura", "slot": "conqueror", "name": "King's Aura", "levels": [
+    { "desc": "A stunning pulse every 15 s.", "mods": { "hakiPulse": 15 } },
+    { "desc": "Every 12 s.", "mods": { "hakiPulse": 12 } },
+    { "desc": "Every 9 s.", "mods": { "hakiPulse": 9 } } ] },
+  { "id": "overwhelming", "slot": "conqueror", "name": "Overwhelming Presence", "levels": [
+    { "desc": "30% chance weak enemies faint when they touch you.", "mods": { "weakContactKill": 0.3 } },
+    { "desc": "60% chance.", "mods": { "weakContactKill": 0.6 } },
+    { "desc": "Weak enemies always faint on contact.", "mods": { "weakContactKill": 1 } } ] },
+  { "id": "will_of_the_king", "slot": "conqueror", "name": "Will of the King", "levels": [
+    { "desc": "Special charges 15% faster.", "mods": { "specialCharge": 0.15 } },
+    { "desc": "30% faster.", "mods": { "specialCharge": 0.3 } },
+    { "desc": "45% faster.", "mods": { "specialCharge": 0.45 } } ] }
+]

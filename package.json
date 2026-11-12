@@ -1,0 +1,26 @@
+{
+  "name": "grand-line-survivor",
+  "private": true,
+  "version": "0.3.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "balance": "node scripts/export-balance.mjs"
+  },
+  "dependencies": {
+    "@fontsource/abril-fatface": "^5.3.0",
+    "@fontsource/m-plus-rounded-1c": "^5.3.0",
+    "@fontsource/rye": "^5.3.0",
+    "phaser": "^4.2.1"
+  },
+  "devDependencies": {
+    "typescript": "5.9",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}

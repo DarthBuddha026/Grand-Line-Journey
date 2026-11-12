@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#082541" />
+    <title>Grand Line Survivor</title>
+    <link rel="icon" href="data:," />
+    <style>
+      html, body { margin: 0; height: 100%; background: #082541; overflow: hidden; touch-action: none; }
+      /* 100dvh avoids the mobile browser toolbar cropping the bottom of the game. */
+      #game { width: 100vw; height: 100vh; height: 100dvh; }
+      #rotate {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        padding: 24px;
+        background: repeating-linear-gradient(135deg, #082541 0 26px, #0b2c4c 26px 52px);
+        color: #fffaf0;
+        text-align: center;
+        font-family: "M PLUS Rounded 1c", "Trebuchet MS", sans-serif;
+        font-weight: 800;
+        font-size: 18px;
+      }
+      #rotate .title {
+        font-family: "Abril Fatface", Georgia, serif;
+        font-size: 30px;
+        color: #ffcc33;
+        -webkit-text-stroke: 2px #1d1410;
+        text-shadow: 4px 4px 0 #e0303a;
+      }
+      #rotate .phone {
+        width: 54px;
+        height: 92px;
+        border: 5px solid #1d1410;
+        border-radius: 12px;
+        background: #f3e2b8;
+        box-shadow: 5px 5px 0 #1d1410;
+        animation: turn 1.8s ease-in-out infinite;
+      }
+      @keyframes turn {
+        0%, 25% { transform: rotate(0deg); }
+        60%, 100% { transform: rotate(-90deg); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #rotate .phone { animation: none; transform: rotate(-90deg); }
+      }
+      /* Phones and tablets held upright: the game is landscape-only. */
+      @media (orientation: portrait) and (pointer: coarse) {
+        #rotate { display: flex; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game"></div>
+    <div id="rotate" role="alert">
+      <div class="phone" aria-hidden="true"></div>
+      <div class="title">Turn your device sideways</div>
+      <div>Grand Line Survivor plays in landscape.</div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

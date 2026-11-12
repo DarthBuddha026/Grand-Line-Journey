@@ -1,0 +1,30 @@
+{
+  "id": "enies_lobby",
+  "order": 3,
+  "name": "Enies Lobby",
+  "desc": "The judicial island over the waterfall. From 15:00 the Buster Call bombards the island.",
+  "durationSec": 1200,
+  "hpScalePerMin": 0.16,
+  "eliteChance": 0.006,
+  "ground": { "base": "#b0a89a", "detail": "#9c9486" },
+  "terrain": [{ "type": "water", "scale": 380, "threshold": 0.7, "seed": 37 }],
+  "hazards": [{ "type": "bombard", "from": 900, "every": 1.1, "dmg": 16, "radius": 32 }],
+  "segments": [
+    { "from": 0, "to": 60, "rate": 1.6, "maxAlive": 60, "enemies": [{ "id": "enies_guard", "weight": 1 }] },
+    { "from": 60, "to": 180, "rate": 2.6, "maxAlive": 100, "enemies": [{ "id": "enies_guard", "weight": 3 }, { "id": "wolf_unit", "weight": 1 }] },
+    { "from": 180, "to": 360, "rate": 3.8, "maxAlive": 150, "enemies": [{ "id": "enies_guard", "weight": 3 }, { "id": "wolf_unit", "weight": 2 }, { "id": "musket_squad", "weight": 2 }] },
+    { "from": 360, "to": 600, "rate": 5.0, "maxAlive": 200, "enemies": [{ "id": "enies_guard", "weight": 3 }, { "id": "wolf_unit", "weight": 2 }, { "id": "musket_squad", "weight": 2 }, { "id": "marine_giant", "weight": 1 }] },
+    { "from": 600, "to": 900, "rate": 7.0, "maxAlive": 270, "enemies": [{ "id": "enies_guard", "weight": 3 }, { "id": "wolf_unit", "weight": 3 }, { "id": "musket_squad", "weight": 3 }, { "id": "marine_giant", "weight": 1 }] },
+    { "from": 900, "to": 1200, "rate": 9.0, "maxAlive": 330, "enemies": [{ "id": "enies_guard", "weight": 2 }, { "id": "wolf_unit", "weight": 3 }, { "id": "musket_squad", "weight": 3 }, { "id": "marine_giant", "weight": 2 }] }
+  ],
+  "events": [
+    { "at": 140, "type": "ring", "enemy": "enies_guard", "count": 40 },
+    { "at": 300, "type": "stampede", "enemy": "wolf_unit", "count": 36 },
+    { "at": 450, "type": "ring", "enemy": "musket_squad", "count": 32 },
+    { "at": 600, "type": "boss", "enemy": "blueno", "count": 1, "role": "mid" },
+    { "at": 760, "type": "stampede", "enemy": "wolf_unit", "count": 56 },
+    { "at": 960, "type": "ring", "enemy": "marine_giant", "count": 22 },
+    { "at": 1100, "type": "ring", "enemy": "musket_squad", "count": 48 },
+    { "at": 1200, "type": "boss", "enemy": "lucci", "count": 1, "role": "final" }
+  ]
+}

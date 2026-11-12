@@ -1,0 +1,13 @@
+[
+  { "id": "hp", "name": "Reinforced Hull", "desc": "+4% max HP per level.", "maxLevel": 10, "baseCost": 100, "costGrowth": 1.35, "stats": [{ "stat": "maxHp", "pct": 0.04 }] },
+  { "id": "atk", "name": "Cannon Upgrades", "desc": "+3% damage per level.", "maxLevel": 10, "baseCost": 120, "costGrowth": 1.35, "stats": [{ "stat": "atk", "pct": 0.03 }] },
+  { "id": "spd", "name": "Bigger Sails", "desc": "+2% move speed per level.", "maxLevel": 5, "baseCost": 150, "costGrowth": 1.4, "stats": [{ "stat": "spd", "pct": 0.02 }] },
+  { "id": "crit", "name": "Lookout Training", "desc": "+1% crit chance per level.", "maxLevel": 5, "baseCost": 150, "costGrowth": 1.4, "stats": [{ "stat": "crit", "flat": 0.01 }] },
+  { "id": "haste", "name": "Gunpowder Stores", "desc": "+2% attack speed per level.", "maxLevel": 5, "baseCost": 180, "costGrowth": 1.45, "stats": [{ "stat": "haste", "flat": 0.02 }] },
+  { "id": "pickup", "name": "Fishing Nets", "desc": "+10% pickup range per level.", "maxLevel": 5, "baseCost": 80, "costGrowth": 1.35, "stats": [{ "stat": "pickup", "pct": 0.1 }] },
+  { "id": "xp", "name": "Navigator's Charts", "desc": "+4% XP gain per level.", "maxLevel": 5, "baseCost": 150, "costGrowth": 1.45, "stats": [{ "stat": "xpGain", "pct": 0.04 }] },
+  { "id": "rerolls", "name": "Reroll", "desc": "+1 level-up Reroll per run.", "maxLevel": 5, "baseCost": 300, "costGrowth": 1.5, "meta": "rerolls" },
+  { "id": "holds", "name": "Hold", "desc": "+1 Hold per run: keep a card for the next level-up.", "maxLevel": 3, "baseCost": 400, "costGrowth": 1.6, "meta": "holds" },
+  { "id": "eliminates", "name": "Eliminate", "desc": "+1 Eliminate per run: remove a card from the pool.", "maxLevel": 3, "baseCost": 400, "costGrowth": 1.6, "meta": "eliminates" },
+  { "id": "revive", "name": "Chopper's Medicine", "desc": "Revive once per run at half HP.", "maxLevel": 1, "baseCost": 2500, "costGrowth": 1, "meta": "revives" }
+]

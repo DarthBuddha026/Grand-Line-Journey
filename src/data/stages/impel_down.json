@@ -1,0 +1,31 @@
+{
+  "id": "impel_down",
+  "order": 4,
+  "name": "Impel Down",
+  "desc": "The underwater prison. Every minute the floors shift between heat, cold and poison.",
+  "durationSec": 1200,
+  "hpScalePerMin": 0.18,
+  "eliteChance": 0.007,
+  "ground": { "base": "#5d5560", "detail": "#4e4752" },
+  "terrain": [{ "type": "heat", "cycle": ["heat", "cold", "poison"], "period": 60, "scale": 260, "threshold": 0.72, "seed": 41 }],
+  "hazards": [],
+  "segments": [
+    { "from": 0, "to": 60, "rate": 1.8, "maxAlive": 60, "enemies": [{ "id": "impel_jailer", "weight": 1 }] },
+    { "from": 60, "to": 180, "rate": 2.8, "maxAlive": 110, "enemies": [{ "id": "impel_jailer", "weight": 3 }, { "id": "hell_hound", "weight": 1 }] },
+    { "from": 180, "to": 360, "rate": 4.0, "maxAlive": 160, "enemies": [{ "id": "impel_jailer", "weight": 3 }, { "id": "hell_hound", "weight": 2 }, { "id": "jailer_rifleman", "weight": 2 }] },
+    { "from": 360, "to": 600, "rate": 5.4, "maxAlive": 210, "enemies": [{ "id": "impel_jailer", "weight": 3 }, { "id": "hell_hound", "weight": 2 }, { "id": "jailer_rifleman", "weight": 2 }, { "id": "minokoala", "weight": 1 }] },
+    { "from": 600, "to": 900, "rate": 7.4, "maxAlive": 280, "enemies": [{ "id": "impel_jailer", "weight": 3 }, { "id": "hell_hound", "weight": 3 }, { "id": "jailer_rifleman", "weight": 3 }, { "id": "minokoala", "weight": 1 }] },
+    { "from": 900, "to": 1200, "rate": 9.5, "maxAlive": 340, "enemies": [{ "id": "impel_jailer", "weight": 2 }, { "id": "hell_hound", "weight": 3 }, { "id": "jailer_rifleman", "weight": 3 }, { "id": "minokoala", "weight": 2 }] }
+  ],
+  "events": [
+    { "at": 150, "type": "stampede", "enemy": "hell_hound", "count": 30 },
+    { "at": 320, "type": "ring", "enemy": "impel_jailer", "count": 50 },
+    { "at": 480, "type": "ring", "enemy": "jailer_rifleman", "count": 36 },
+    { "at": 600, "type": "boss", "enemy": "minotaurus", "count": 1, "role": "mid" },
+    { "at": 770, "type": "stampede", "enemy": "hell_hound", "count": 60 },
+    { "at": 960, "type": "ring", "enemy": "minokoala", "count": 24 },
+    { "at": 1100, "type": "stampede", "enemy": "impel_jailer", "count": 70 },
+    { "at": 1200, "type": "boss", "enemy": "hannyabal", "count": 1, "role": "final" },
+    { "at": 1200, "type": "boss", "enemy": "sadi", "count": 1, "role": "final" }
+  ]
+}

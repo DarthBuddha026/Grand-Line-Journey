@@ -1,0 +1,73 @@
+[
+  { "id": "marine_recruit", "name": "Marine Recruit", "archetype": "fodder", "hp": 8, "speed": 30, "damage": 4, "xp": 1, "radius": 6, "color": "#4a7bd1", "weak": true, "berryChance": 0.02, "meatChance": 0.004 },
+  { "id": "pirate_grunt", "name": "Pirate Grunt", "archetype": "fodder", "hp": 12, "speed": 28, "damage": 5, "xp": 1, "radius": 6, "color": "#9a6a44", "weak": true, "berryChance": 0.03, "meatChance": 0.004 },
+  { "id": "sea_cat", "name": "Sea Cat", "archetype": "fast", "hp": 9, "speed": 24, "damage": 5, "xp": 2, "radius": 6, "color": "#e0a83a", "weak": true, "dashSpeed": 150, "dashEvery": 2.4, "dashTime": 0.45, "berryChance": 0.03, "meatChance": 0.006 },
+  { "id": "musket_marine", "name": "Musket Marine", "archetype": "ranged", "hp": 16, "speed": 24, "damage": 4, "xp": 2, "radius": 6, "color": "#2e4f8f", "range": 130, "fireEvery": 2.6, "projSpeed": 95, "projDamage": 6, "berryChance": 0.05, "meatChance": 0.008 },
+  { "id": "blugori", "name": "Blugori", "archetype": "tank", "hp": 80, "speed": 19, "damage": 9, "xp": 6, "radius": 10, "color": "#6f7f95", "knockbackResist": 0.8, "berryChance": 0.15, "meatChance": 0.03 },
+
+  { "id": "billions_grunt", "name": "Billions Agent", "archetype": "fodder", "hp": 18, "speed": 31, "damage": 6, "xp": 2, "radius": 6, "color": "#c0a060", "weak": true, "berryChance": 0.03, "meatChance": 0.004 },
+  { "id": "bananawani", "name": "Bananawani", "archetype": "fast", "hp": 22, "speed": 22, "damage": 8, "xp": 3, "radius": 8, "color": "#7cb342", "dashSpeed": 165, "dashEvery": 2.6, "dashTime": 0.5, "knockbackResist": 0.3, "berryChance": 0.04, "meatChance": 0.01 },
+  { "id": "baroque_agent", "name": "Baroque Works Agent", "archetype": "ranged", "hp": 22, "speed": 26, "damage": 5, "xp": 3, "radius": 6, "color": "#6a1b9a", "range": 140, "fireEvery": 2.3, "projSpeed": 105, "projDamage": 8, "berryChance": 0.05, "meatChance": 0.008 },
+  { "id": "hasami", "name": "Hasami Crab", "archetype": "tank", "hp": 120, "speed": 18, "damage": 11, "xp": 8, "radius": 11, "color": "#d84315", "knockbackResist": 0.85, "berryChance": 0.15, "meatChance": 0.04 },
+
+  { "id": "enies_guard", "name": "Enies Lobby Guard", "archetype": "fodder", "hp": 24, "speed": 32, "damage": 7, "xp": 2, "radius": 6, "color": "#90a4ae", "weak": true, "berryChance": 0.03, "meatChance": 0.004 },
+  { "id": "wolf_unit", "name": "Wolf Unit", "archetype": "fast", "hp": 26, "speed": 26, "damage": 8, "xp": 3, "radius": 7, "color": "#8d6e63", "dashSpeed": 175, "dashEvery": 2.2, "dashTime": 0.45, "berryChance": 0.04, "meatChance": 0.01 },
+  { "id": "musket_squad", "name": "Musket Squad", "archetype": "ranged", "hp": 28, "speed": 25, "damage": 6, "xp": 3, "radius": 6, "color": "#1a237e", "range": 150, "fireEvery": 2.0, "projSpeed": 115, "projDamage": 9, "berryChance": 0.05, "meatChance": 0.008 },
+  { "id": "marine_giant", "name": "Giant Marine", "archetype": "tank", "hp": 170, "speed": 18, "damage": 13, "xp": 10, "radius": 12, "color": "#cfd8dc", "knockbackResist": 0.9, "berryChance": 0.18, "meatChance": 0.04 },
+
+  { "id": "impel_jailer", "name": "Impel Down Jailer", "archetype": "fodder", "hp": 30, "speed": 33, "damage": 8, "xp": 2, "radius": 6, "color": "#4e342e", "weak": true, "berryChance": 0.03, "meatChance": 0.004 },
+  { "id": "hell_hound", "name": "Hell Hound", "archetype": "fast", "hp": 30, "speed": 27, "damage": 9, "xp": 3, "radius": 7, "color": "#b71c1c", "dashSpeed": 185, "dashEvery": 2.0, "dashTime": 0.45, "berryChance": 0.04, "meatChance": 0.01 },
+  { "id": "jailer_rifleman", "name": "Jailer Rifleman", "archetype": "ranged", "hp": 32, "speed": 25, "damage": 7, "xp": 3, "radius": 6, "color": "#37474f", "range": 150, "fireEvery": 1.9, "projSpeed": 120, "projDamage": 10, "berryChance": 0.05, "meatChance": 0.008 },
+  { "id": "minokoala", "name": "Minokoala", "archetype": "tank", "hp": 210, "speed": 19, "damage": 14, "xp": 12, "radius": 12, "color": "#9e9e9e", "knockbackResist": 0.9, "devilFruit": false, "berryChance": 0.2, "meatChance": 0.05 },
+
+  { "id": "morgan", "name": "Axe-Hand Morgan", "title": "Captain of the 153rd Branch", "archetype": "boss", "hp": 1400, "speed": 30, "damage": 14, "xp": 80, "radius": 14, "color": "#78909c", "knockbackResist": 1,
+    "patterns": [
+      { "type": "charge", "cooldown": 5, "speed": 220, "telegraph": 0.9, "dmg": 18 },
+      { "type": "slam", "cooldown": 7, "radius": 50, "telegraph": 1.0, "dmg": 20 },
+      { "type": "summon", "cooldown": 12, "minion": "marine_recruit", "count": 6 } ] },
+  { "id": "arlong", "name": "Arlong", "title": "Saw-Tooth of the Arlong Pirates", "archetype": "boss", "hp": 3200, "speed": 34, "damage": 18, "xp": 200, "radius": 16, "color": "#5c8fc8", "knockbackResist": 1,
+    "patterns": [
+      { "type": "charge", "cooldown": 4, "speed": 280, "telegraph": 0.8, "dmg": 22 },
+      { "type": "aimed", "cooldown": 3.5, "count": 5, "spread": 12, "speed": 140, "dmg": 10 },
+      { "type": "radial", "cooldown": 8, "count": 16, "speed": 100, "waves": 2, "dmg": 10 },
+      { "type": "summon", "cooldown": 14, "minion": "pirate_grunt", "count": 8 } ] },
+
+  { "id": "mr1", "name": "Mr. 1", "title": "Daz Bonez, the Blade Man", "archetype": "boss", "hp": 1800, "speed": 36, "damage": 16, "xp": 120, "radius": 13, "color": "#8d6e63", "devilFruit": true, "knockbackResist": 1,
+    "patterns": [
+      { "type": "charge", "cooldown": 4.5, "speed": 250, "telegraph": 0.8, "dmg": 20 },
+      { "type": "radial", "cooldown": 6, "count": 12, "speed": 120, "waves": 3, "dmg": 10 },
+      { "type": "slam", "cooldown": 8, "radius": 45, "telegraph": 0.9, "dmg": 22 } ] },
+  { "id": "mr3", "name": "Mr. 3", "title": "Galdino, the Candle Man (and his Bananawani)", "archetype": "boss", "hp": 3800, "speed": 22, "damage": 14, "xp": 250, "radius": 13, "color": "#eeeeee", "devilFruit": true, "knockbackResist": 1,
+    "patterns": [
+      { "type": "zones", "cooldown": 6, "count": 5, "radius": 30, "duration": 6, "dmg": 6, "color": "#f5f5f5" },
+      { "type": "summon", "cooldown": 10, "minion": "bananawani", "count": 6 },
+      { "type": "aimed", "cooldown": 3, "count": 3, "spread": 20, "speed": 110, "dmg": 10 } ] },
+
+  { "id": "blueno", "name": "Blueno", "title": "CP9, the Air Door", "archetype": "boss", "hp": 2200, "speed": 30, "damage": 18, "xp": 150, "radius": 15, "color": "#3e2723", "devilFruit": true, "knockbackResist": 1,
+    "patterns": [
+      { "type": "teleport", "cooldown": 5, "telegraph": 0.8, "radius": 55, "dmg": 22 },
+      { "type": "aimed", "cooldown": 3, "count": 3, "spread": 15, "speed": 130, "dmg": 12 },
+      { "type": "charge", "cooldown": 7, "speed": 240, "telegraph": 0.9, "dmg": 20 } ] },
+  { "id": "lucci", "name": "Rob Lucci", "title": "CP9, Leopard Form", "archetype": "boss", "hp": 4500, "speed": 44, "damage": 20, "xp": 300, "radius": 15, "color": "#f9a825", "devilFruit": true, "knockbackResist": 1,
+    "patterns": [
+      { "type": "charge", "cooldown": 3.5, "speed": 320, "telegraph": 0.7, "dmg": 24 },
+      { "type": "aimed", "cooldown": 4, "count": 7, "spread": 10, "speed": 170, "dmg": 12 },
+      { "type": "radial", "cooldown": 9, "count": 20, "speed": 130, "waves": 3, "dmg": 12 },
+      { "type": "slam", "cooldown": 7, "radius": 60, "telegraph": 0.9, "dmg": 26 } ] },
+
+  { "id": "minotaurus", "name": "Minotaurus", "title": "Jailer Beast of Level 2", "archetype": "boss", "hp": 2800, "speed": 32, "damage": 20, "xp": 180, "radius": 16, "color": "#6d4c41", "knockbackResist": 1,
+    "patterns": [
+      { "type": "charge", "cooldown": 4, "speed": 260, "telegraph": 0.8, "dmg": 24 },
+      { "type": "slam", "cooldown": 6, "radius": 60, "telegraph": 1.0, "dmg": 26 },
+      { "type": "summon", "cooldown": 12, "minion": "minokoala", "count": 2 } ] },
+  { "id": "hannyabal", "name": "Hannyabal", "title": "Vice Warden (wants the Chief's job)", "archetype": "boss", "hp": 3000, "speed": 30, "damage": 18, "xp": 250, "radius": 15, "color": "#3949ab", "knockbackResist": 1,
+    "patterns": [
+      { "type": "charge", "cooldown": 4.5, "speed": 260, "telegraph": 0.8, "dmg": 22 },
+      { "type": "aimed", "cooldown": 3.5, "count": 5, "spread": 14, "speed": 150, "dmg": 12 },
+      { "type": "slam", "cooldown": 7, "radius": 55, "telegraph": 0.9, "dmg": 24 } ] },
+  { "id": "sadi", "name": "Sadi-chan", "title": "Chief Guard of the Jailer Beasts", "archetype": "boss", "hp": 2800, "speed": 38, "damage": 16, "xp": 250, "radius": 13, "color": "#ec407a", "knockbackResist": 1,
+    "patterns": [
+      { "type": "radial", "cooldown": 6, "count": 14, "speed": 125, "waves": 3, "dmg": 11 },
+      { "type": "summon", "cooldown": 11, "minion": "hell_hound", "count": 6 },
+      { "type": "zones", "cooldown": 9, "count": 4, "radius": 28, "duration": 5, "dmg": 7, "color": "#ec407a" } ] }
+]

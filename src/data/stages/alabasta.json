@@ -1,0 +1,33 @@
+{
+  "id": "alabasta",
+  "order": 2,
+  "name": "Alabasta Desert",
+  "desc": "Endless dunes. Sandstorms reduce vision and quicksand slows you down.",
+  "durationSec": 1200,
+  "hpScalePerMin": 0.14,
+  "eliteChance": 0.005,
+  "ground": { "base": "#e3c27a", "detail": "#d1ab5f" },
+  "terrain": [
+    { "type": "quicksand", "scale": 300, "threshold": 0.72, "seed": 23 },
+    { "type": "water", "scale": 600, "threshold": 0.82, "seed": 29 }
+  ],
+  "hazards": [{ "type": "sandstorm", "from": 180, "every": 120, "duration": 25 }],
+  "segments": [
+    { "from": 0, "to": 60, "rate": 1.4, "maxAlive": 50, "enemies": [{ "id": "billions_grunt", "weight": 1 }] },
+    { "from": 60, "to": 180, "rate": 2.4, "maxAlive": 90, "enemies": [{ "id": "billions_grunt", "weight": 3 }, { "id": "bananawani", "weight": 1 }] },
+    { "from": 180, "to": 360, "rate": 3.4, "maxAlive": 140, "enemies": [{ "id": "billions_grunt", "weight": 3 }, { "id": "bananawani", "weight": 2 }, { "id": "baroque_agent", "weight": 1 }] },
+    { "from": 360, "to": 600, "rate": 4.6, "maxAlive": 190, "enemies": [{ "id": "billions_grunt", "weight": 3 }, { "id": "bananawani", "weight": 2 }, { "id": "baroque_agent", "weight": 2 }, { "id": "hasami", "weight": 1 }] },
+    { "from": 600, "to": 900, "rate": 6.5, "maxAlive": 260, "enemies": [{ "id": "billions_grunt", "weight": 3 }, { "id": "bananawani", "weight": 3 }, { "id": "baroque_agent", "weight": 2 }, { "id": "hasami", "weight": 1 }] },
+    { "from": 900, "to": 1200, "rate": 8.5, "maxAlive": 320, "enemies": [{ "id": "billions_grunt", "weight": 2 }, { "id": "bananawani", "weight": 3 }, { "id": "baroque_agent", "weight": 3 }, { "id": "hasami", "weight": 2 }] }
+  ],
+  "events": [
+    { "at": 150, "type": "stampede", "enemy": "bananawani", "count": 24 },
+    { "at": 330, "type": "ring", "enemy": "billions_grunt", "count": 44 },
+    { "at": 480, "type": "ring", "enemy": "baroque_agent", "count": 30 },
+    { "at": 600, "type": "boss", "enemy": "mr1", "count": 1, "role": "mid" },
+    { "at": 780, "type": "stampede", "enemy": "bananawani", "count": 50 },
+    { "at": 960, "type": "ring", "enemy": "hasami", "count": 20 },
+    { "at": 1100, "type": "stampede", "enemy": "billions_grunt", "count": 60 },
+    { "at": 1200, "type": "boss", "enemy": "mr3", "count": 1, "role": "final" }
+  ]
+}

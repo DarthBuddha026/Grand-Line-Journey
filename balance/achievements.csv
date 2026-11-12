@@ -1,0 +1,18 @@
+id,name,desc,cond,berries,unlock
+first_voyage,First Voyage,Finish a run.,"{""type"":""runs"",""n"":1}",100,
+east_blue,East Blue Rookie,Clear Shells Town.,"{""type"":""clearStage"",""stage"":""shells_town""}",300,
+alabasta,Saviour of Alabasta,Clear Alabasta Desert.,"{""type"":""clearStage"",""stage"":""alabasta""}",500,
+enies_lobby,Declaration of War,Clear Enies Lobby.,"{""type"":""clearStage"",""stage"":""enies_lobby""}",800,
+impel_down,Great Jailbreak,Clear Impel Down. Unlocks Jinbe.,"{""type"":""clearStage"",""stage"":""impel_down""}",1000,jinbe
+grand_line,Master of the Grand Line,Clear all four stages. Unlocks Sengoku.,"{""type"":""clearAll""}",2000,sengoku
+hero_koby,A Marine's Dream,Clear Shells Town as Koby. Unlocks Garp.,"{""type"":""clearStage"",""stage"":""shells_town"",""character"":""koby""}",,garp
+sogeking,Sniper Island,Clear Enies Lobby as Usopp.,"{""type"":""clearStage"",""stage"":""enies_lobby"",""character"":""usopp""}",1500,
+kills_1000,One-Man Army,"Defeat 1,000 enemies in one run.","{""type"":""kills"",""n"":1000}",300,
+kills_3000,Sea of Bodies,"Defeat 3,000 enemies in one run.","{""type"":""kills"",""n"":3000}",800,
+level_30,Supernova,Reach level 30 in a run.,"{""type"":""level"",""n"":30}",300,
+level_60,Emperor Class,Reach level 60 in a run.,"{""type"":""level"",""n"":60}",800,
+bounty_100m,Hundred Million,"Earn a ฿100,000,000 bounty.","{""type"":""bounty"",""n"":100000000}",500,
+bounty_300m,Worst Generation,"Earn a ฿300,000,000 bounty.","{""type"":""bounty"",""n"":300000000}",1500,
+alliance_1,Pirate Alliance,Discover an Alliance.,"{""type"":""alliances"",""n"":1}",300,
+alliance_all,Grand Fleet,Discover every Alliance.,"{""type"":""alliances"",""n"":6}",2000,
+endless_30,Endless Voyage,Survive 30 minutes in one run.,"{""type"":""survive"",""sec"":1800}",1000,

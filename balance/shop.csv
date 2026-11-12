@@ -1,0 +1,58 @@
+id,name,level,cost,stats,meta
+hp,Reinforced Hull,1,100,"[{""stat"":""maxHp"",""pct"":0.04}]",
+hp,Reinforced Hull,2,135,"[{""stat"":""maxHp"",""pct"":0.04}]",
+hp,Reinforced Hull,3,182,"[{""stat"":""maxHp"",""pct"":0.04}]",
+hp,Reinforced Hull,4,246,"[{""stat"":""maxHp"",""pct"":0.04}]",
+hp,Reinforced Hull,5,332,"[{""stat"":""maxHp"",""pct"":0.04}]",
+hp,Reinforced Hull,6,448,"[{""stat"":""maxHp"",""pct"":0.04}]",
+hp,Reinforced Hull,7,605,"[{""stat"":""maxHp"",""pct"":0.04}]",
+hp,Reinforced Hull,8,817,"[{""stat"":""maxHp"",""pct"":0.04}]",
+hp,Reinforced Hull,9,1103,"[{""stat"":""maxHp"",""pct"":0.04}]",
+hp,Reinforced Hull,10,1489,"[{""stat"":""maxHp"",""pct"":0.04}]",
+atk,Cannon Upgrades,1,120,"[{""stat"":""atk"",""pct"":0.03}]",
+atk,Cannon Upgrades,2,162,"[{""stat"":""atk"",""pct"":0.03}]",
+atk,Cannon Upgrades,3,219,"[{""stat"":""atk"",""pct"":0.03}]",
+atk,Cannon Upgrades,4,295,"[{""stat"":""atk"",""pct"":0.03}]",
+atk,Cannon Upgrades,5,399,"[{""stat"":""atk"",""pct"":0.03}]",
+atk,Cannon Upgrades,6,538,"[{""stat"":""atk"",""pct"":0.03}]",
+atk,Cannon Upgrades,7,726,"[{""stat"":""atk"",""pct"":0.03}]",
+atk,Cannon Upgrades,8,981,"[{""stat"":""atk"",""pct"":0.03}]",
+atk,Cannon Upgrades,9,1324,"[{""stat"":""atk"",""pct"":0.03}]",
+atk,Cannon Upgrades,10,1787,"[{""stat"":""atk"",""pct"":0.03}]",
+spd,Bigger Sails,1,150,"[{""stat"":""spd"",""pct"":0.02}]",
+spd,Bigger Sails,2,210,"[{""stat"":""spd"",""pct"":0.02}]",
+spd,Bigger Sails,3,294,"[{""stat"":""spd"",""pct"":0.02}]",
+spd,Bigger Sails,4,412,"[{""stat"":""spd"",""pct"":0.02}]",
+spd,Bigger Sails,5,576,"[{""stat"":""spd"",""pct"":0.02}]",
+crit,Lookout Training,1,150,"[{""stat"":""crit"",""flat"":0.01}]",
+crit,Lookout Training,2,210,"[{""stat"":""crit"",""flat"":0.01}]",
+crit,Lookout Training,3,294,"[{""stat"":""crit"",""flat"":0.01}]",
+crit,Lookout Training,4,412,"[{""stat"":""crit"",""flat"":0.01}]",
+crit,Lookout Training,5,576,"[{""stat"":""crit"",""flat"":0.01}]",
+haste,Gunpowder Stores,1,180,"[{""stat"":""haste"",""flat"":0.02}]",
+haste,Gunpowder Stores,2,261,"[{""stat"":""haste"",""flat"":0.02}]",
+haste,Gunpowder Stores,3,378,"[{""stat"":""haste"",""flat"":0.02}]",
+haste,Gunpowder Stores,4,549,"[{""stat"":""haste"",""flat"":0.02}]",
+haste,Gunpowder Stores,5,796,"[{""stat"":""haste"",""flat"":0.02}]",
+pickup,Fishing Nets,1,80,"[{""stat"":""pickup"",""pct"":0.1}]",
+pickup,Fishing Nets,2,108,"[{""stat"":""pickup"",""pct"":0.1}]",
+pickup,Fishing Nets,3,146,"[{""stat"":""pickup"",""pct"":0.1}]",
+pickup,Fishing Nets,4,197,"[{""stat"":""pickup"",""pct"":0.1}]",
+pickup,Fishing Nets,5,266,"[{""stat"":""pickup"",""pct"":0.1}]",
+xp,Navigator's Charts,1,150,"[{""stat"":""xpGain"",""pct"":0.04}]",
+xp,Navigator's Charts,2,218,"[{""stat"":""xpGain"",""pct"":0.04}]",
+xp,Navigator's Charts,3,315,"[{""stat"":""xpGain"",""pct"":0.04}]",
+xp,Navigator's Charts,4,457,"[{""stat"":""xpGain"",""pct"":0.04}]",
+xp,Navigator's Charts,5,663,"[{""stat"":""xpGain"",""pct"":0.04}]",
+rerolls,Reroll,1,300,,rerolls
+rerolls,Reroll,2,450,,rerolls
+rerolls,Reroll,3,675,,rerolls
+rerolls,Reroll,4,1013,,rerolls
+rerolls,Reroll,5,1519,,rerolls
+holds,Hold,1,400,,holds
+holds,Hold,2,640,,holds
+holds,Hold,3,1024,,holds
+eliminates,Eliminate,1,400,,eliminates
+eliminates,Eliminate,2,640,,eliminates
+eliminates,Eliminate,3,1024,,eliminates
+revive,Chopper's Medicine,1,2500,,revives

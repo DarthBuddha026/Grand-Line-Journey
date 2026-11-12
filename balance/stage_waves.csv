@@ -1,0 +1,59 @@
+stage,kind,from,to,rate,maxAlive,enemies,hpScalePerMin,eliteChance
+shells_town,segment,0,60,1.2,40,marine_recruit×1,0.12,0.004
+shells_town,segment,60,180,2,80,marine_recruit×2 pirate_grunt×1,0.12,0.004
+shells_town,segment,180,300,3,120,marine_recruit×2 pirate_grunt×2 sea_cat×1,0.12,0.004
+shells_town,segment,300,480,4,160,pirate_grunt×3 sea_cat×2 musket_marine×1,0.12,0.004
+shells_town,segment,480,600,5,200,pirate_grunt×3 sea_cat×2 musket_marine×2 blugori×1,0.12,0.004
+shells_town,segment,600,900,6.5,260,pirate_grunt×3 sea_cat×3 musket_marine×2 blugori×1,0.12,0.004
+shells_town,segment,900,1200,8,320,pirate_grunt×2 sea_cat×3 musket_marine×3 blugori×2,0.12,0.004
+shells_town,event:ring,120,,,,marine_recruit×36,,
+shells_town,event:stampede,270,,,,sea_cat×30,,
+shells_town,event:ring,420,,,,pirate_grunt×48,,
+shells_town,event:boss(mid),600,,,,morgan×1,,
+shells_town,event:stampede,750,,,,sea_cat×50,,
+shells_town,event:ring,900,,,,musket_marine×40,,
+shells_town,event:stampede,1080,,,,blugori×30,,
+shells_town,event:boss(final),1200,,,,arlong×1,,
+alabasta,segment,0,60,1.4,50,billions_grunt×1,0.14,0.005
+alabasta,segment,60,180,2.4,90,billions_grunt×3 bananawani×1,0.14,0.005
+alabasta,segment,180,360,3.4,140,billions_grunt×3 bananawani×2 baroque_agent×1,0.14,0.005
+alabasta,segment,360,600,4.6,190,billions_grunt×3 bananawani×2 baroque_agent×2 hasami×1,0.14,0.005
+alabasta,segment,600,900,6.5,260,billions_grunt×3 bananawani×3 baroque_agent×2 hasami×1,0.14,0.005
+alabasta,segment,900,1200,8.5,320,billions_grunt×2 bananawani×3 baroque_agent×3 hasami×2,0.14,0.005
+alabasta,event:stampede,150,,,,bananawani×24,,
+alabasta,event:ring,330,,,,billions_grunt×44,,
+alabasta,event:ring,480,,,,baroque_agent×30,,
+alabasta,event:boss(mid),600,,,,mr1×1,,
+alabasta,event:stampede,780,,,,bananawani×50,,
+alabasta,event:ring,960,,,,hasami×20,,
+alabasta,event:stampede,1100,,,,billions_grunt×60,,
+alabasta,event:boss(final),1200,,,,mr3×1,,
+enies_lobby,segment,0,60,1.6,60,enies_guard×1,0.16,0.006
+enies_lobby,segment,60,180,2.6,100,enies_guard×3 wolf_unit×1,0.16,0.006
+enies_lobby,segment,180,360,3.8,150,enies_guard×3 wolf_unit×2 musket_squad×2,0.16,0.006
+enies_lobby,segment,360,600,5,200,enies_guard×3 wolf_unit×2 musket_squad×2 marine_giant×1,0.16,0.006
+enies_lobby,segment,600,900,7,270,enies_guard×3 wolf_unit×3 musket_squad×3 marine_giant×1,0.16,0.006
+enies_lobby,segment,900,1200,9,330,enies_guard×2 wolf_unit×3 musket_squad×3 marine_giant×2,0.16,0.006
+enies_lobby,event:ring,140,,,,enies_guard×40,,
+enies_lobby,event:stampede,300,,,,wolf_unit×36,,
+enies_lobby,event:ring,450,,,,musket_squad×32,,
+enies_lobby,event:boss(mid),600,,,,blueno×1,,
+enies_lobby,event:stampede,760,,,,wolf_unit×56,,
+enies_lobby,event:ring,960,,,,marine_giant×22,,
+enies_lobby,event:ring,1100,,,,musket_squad×48,,
+enies_lobby,event:boss(final),1200,,,,lucci×1,,
+impel_down,segment,0,60,1.8,60,impel_jailer×1,0.18,0.007
+impel_down,segment,60,180,2.8,110,impel_jailer×3 hell_hound×1,0.18,0.007
+impel_down,segment,180,360,4,160,impel_jailer×3 hell_hound×2 jailer_rifleman×2,0.18,0.007
+impel_down,segment,360,600,5.4,210,impel_jailer×3 hell_hound×2 jailer_rifleman×2 minokoala×1,0.18,0.007
+impel_down,segment,600,900,7.4,280,impel_jailer×3 hell_hound×3 jailer_rifleman×3 minokoala×1,0.18,0.007
+impel_down,segment,900,1200,9.5,340,impel_jailer×2 hell_hound×3 jailer_rifleman×3 minokoala×2,0.18,0.007
+impel_down,event:stampede,150,,,,hell_hound×30,,
+impel_down,event:ring,320,,,,impel_jailer×50,,
+impel_down,event:ring,480,,,,jailer_rifleman×36,,
+impel_down,event:boss(mid),600,,,,minotaurus×1,,
+impel_down,event:stampede,770,,,,hell_hound×60,,
+impel_down,event:ring,960,,,,minokoala×24,,
+impel_down,event:stampede,1100,,,,impel_jailer×70,,
+impel_down,event:boss(final),1200,,,,hannyabal×1,,
+impel_down,event:boss(final),1200,,,,sadi×1,,

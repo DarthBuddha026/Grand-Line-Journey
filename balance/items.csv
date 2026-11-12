@@ -1,0 +1,71 @@
+id,name,level,desc,stats,mods
+meat_on_the_bone,Meat on the Bone,1,+20% food healing.,[],"{""healMul"":0.2}"
+meat_on_the_bone,Meat on the Bone,2,+40% food healing.,[],"{""healMul"":0.4}"
+meat_on_the_bone,Meat on the Bone,3,+60% food healing.,[],"{""healMul"":0.6}"
+meat_on_the_bone,Meat on the Bone,4,+80% food healing.,[],"{""healMul"":0.8}"
+meat_on_the_bone,Meat on the Bone,5,"+100% food healing, +0.3 HP regen per second.",[],"{""healMul"":1,""regen"":0.3}"
+vivre_card,Vivre Card,1,"+4% max HP, +1 revive.","[{""stat"":""maxHp"",""pct"":0.04}]","{""revives"":1}"
+vivre_card,Vivre Card,2,"+8% max HP, +1 revive.","[{""stat"":""maxHp"",""pct"":0.08}]","{""revives"":1}"
+vivre_card,Vivre Card,3,"+12% max HP, +1 revive.","[{""stat"":""maxHp"",""pct"":0.12}]","{""revives"":1}"
+vivre_card,Vivre Card,4,"+16% max HP, +1 revive.","[{""stat"":""maxHp"",""pct"":0.16}]","{""revives"":1}"
+vivre_card,Vivre Card,5,"+20% max HP, +1 revive.","[{""stat"":""maxHp"",""pct"":0.2}]","{""revives"":1}"
+log_pose,Log Pose,1,+30% pickup range.,"[{""stat"":""pickup"",""pct"":0.3}]",{}
+log_pose,Log Pose,2,+60% pickup range.,"[{""stat"":""pickup"",""pct"":0.6}]",{}
+log_pose,Log Pose,3,+90% pickup range.,"[{""stat"":""pickup"",""pct"":0.9}]",{}
+log_pose,Log Pose,4,+120% pickup range.,"[{""stat"":""pickup"",""pct"":1.2}]",{}
+log_pose,Log Pose,5,"+150% pickup range, +10% XP gain.","[{""stat"":""pickup"",""pct"":1.5},{""stat"":""xpGain"",""pct"":0.1}]",{}
+eternal_pose,Eternal Pose,1,+8% XP gain.,"[{""stat"":""xpGain"",""pct"":0.08}]",{}
+eternal_pose,Eternal Pose,2,+16% XP gain.,"[{""stat"":""xpGain"",""pct"":0.16}]",{}
+eternal_pose,Eternal Pose,3,+24% XP gain.,"[{""stat"":""xpGain"",""pct"":0.24}]",{}
+eternal_pose,Eternal Pose,4,+32% XP gain.,"[{""stat"":""xpGain"",""pct"":0.32}]",{}
+eternal_pose,Eternal Pose,5,+40% XP gain.,"[{""stat"":""xpGain"",""pct"":0.4}]",{}
+treasure_map,Treasure Map,1,+30% chest chance.,[],"{""chestRate"":0.3}"
+treasure_map,Treasure Map,2,+60% chest chance.,[],"{""chestRate"":0.6}"
+treasure_map,Treasure Map,3,+90% chest chance.,[],"{""chestRate"":0.9}"
+treasure_map,Treasure Map,4,+120% chest chance.,[],"{""chestRate"":1.2}"
+treasure_map,Treasure Map,5,+150% chest chance.,[],"{""chestRate"":1.5}"
+bounty_poster,Bounty Poster,1,"+25% Berries, +6% enemy spawns.",[],"{""berryMul"":0.25,""spawnMul"":0.06}"
+bounty_poster,Bounty Poster,2,"+50% Berries, +12% enemy spawns.",[],"{""berryMul"":0.5,""spawnMul"":0.12}"
+bounty_poster,Bounty Poster,3,"+75% Berries, +18% enemy spawns.",[],"{""berryMul"":0.75,""spawnMul"":0.18}"
+bounty_poster,Bounty Poster,4,"+100% Berries, +24% enemy spawns.",[],"{""berryMul"":1,""spawnMul"":0.24}"
+bounty_poster,Bounty Poster,5,"+125% Berries, +30% enemy spawns.",[],"{""berryMul"":1.25,""spawnMul"":0.3}"
+adam_wood,Adam Wood,1,+10% max HP.,"[{""stat"":""maxHp"",""pct"":0.1}]",{}
+adam_wood,Adam Wood,2,+20% max HP.,"[{""stat"":""maxHp"",""pct"":0.2}]",{}
+adam_wood,Adam Wood,3,+30% max HP.,"[{""stat"":""maxHp"",""pct"":0.3}]",{}
+adam_wood,Adam Wood,4,+40% max HP.,"[{""stat"":""maxHp"",""pct"":0.4}]",{}
+adam_wood,Adam Wood,5,"+50% max HP, +5% defense.","[{""stat"":""maxHp"",""pct"":0.5},{""stat"":""defense"",""flat"":0.05}]",{}
+cola_barrel,Cola Barrel,1,+8% move speed.,"[{""stat"":""spd"",""pct"":0.08}]",{}
+cola_barrel,Cola Barrel,2,+16% move speed.,"[{""stat"":""spd"",""pct"":0.16}]",{}
+cola_barrel,Cola Barrel,3,+24% move speed.,"[{""stat"":""spd"",""pct"":0.24}]",{}
+cola_barrel,Cola Barrel,4,+32% move speed.,"[{""stat"":""spd"",""pct"":0.32}]",{}
+cola_barrel,Cola Barrel,5,"+40% move speed, +5% attack speed.","[{""stat"":""spd"",""pct"":0.4},{""stat"":""haste"",""flat"":0.05}]",{}
+coup_de_burst,Coup de Burst,1,+1 emergency dash charge.,[],"{""emergencyDash"":1}"
+coup_de_burst,Coup de Burst,2,+2 emergency dash charge.,[],"{""emergencyDash"":2}"
+coup_de_burst,Coup de Burst,3,+3 emergency dash charge.,[],"{""emergencyDash"":3}"
+coup_de_burst,Coup de Burst,4,+4 emergency dash charge.,[],"{""emergencyDash"":4}"
+coup_de_burst,Coup de Burst,5,+5 emergency dash charge.,[],"{""emergencyDash"":5}"
+sake_cup,Sake Cup,1,"+4% crit chance, +3% aim wobble.","[{""stat"":""crit"",""flat"":0.04}]","{""aimWobble"":0.03}"
+sake_cup,Sake Cup,2,"+8% crit chance, +6% aim wobble.","[{""stat"":""crit"",""flat"":0.08}]","{""aimWobble"":0.06}"
+sake_cup,Sake Cup,3,"+12% crit chance, +9% aim wobble.","[{""stat"":""crit"",""flat"":0.12}]","{""aimWobble"":0.09}"
+sake_cup,Sake Cup,4,"+16% crit chance, +12% aim wobble.","[{""stat"":""crit"",""flat"":0.16}]","{""aimWobble"":0.12}"
+sake_cup,Sake Cup,5,"+20% crit chance, +15% aim wobble.","[{""stat"":""crit"",""flat"":0.2}]","{""aimWobble"":0.15}"
+jolly_roger,Jolly Roger,1,+4% damage per max-level weapon.,[],"{""maxedWeaponDmg"":0.04}"
+jolly_roger,Jolly Roger,2,+8% damage per max-level weapon.,[],"{""maxedWeaponDmg"":0.08}"
+jolly_roger,Jolly Roger,3,+12% damage per max-level weapon.,[],"{""maxedWeaponDmg"":0.12}"
+jolly_roger,Jolly Roger,4,+16% damage per max-level weapon.,[],"{""maxedWeaponDmg"":0.16}"
+jolly_roger,Jolly Roger,5,+20% damage per max-level weapon.,[],"{""maxedWeaponDmg"":0.2}"
+klabautermann,Klabautermann,1,+6 shield.,[],"{""shieldMax"":6}"
+klabautermann,Klabautermann,2,+12 shield.,[],"{""shieldMax"":12}"
+klabautermann,Klabautermann,3,+18 shield.,[],"{""shieldMax"":18}"
+klabautermann,Klabautermann,4,+24 shield.,[],"{""shieldMax"":24}"
+klabautermann,Klabautermann,5,+30 shield.,[],"{""shieldMax"":30}"
+gold_doubloon,Gold Doubloon,1,"+15% chance of an extra chest upgrade, +5% luck.",[],"{""chestExtra"":0.15,""luck"":0.05}"
+gold_doubloon,Gold Doubloon,2,"+30% chance of an extra chest upgrade, +10% luck.",[],"{""chestExtra"":0.3,""luck"":0.1}"
+gold_doubloon,Gold Doubloon,3,"+45% chance of an extra chest upgrade, +15% luck.",[],"{""chestExtra"":0.45,""luck"":0.15}"
+gold_doubloon,Gold Doubloon,4,"+60% chance of an extra chest upgrade, +20% luck.",[],"{""chestExtra"":0.6,""luck"":0.2}"
+gold_doubloon,Gold Doubloon,5,"+75% chance of an extra chest upgrade, +25% luck.",[],"{""chestExtra"":0.75,""luck"":0.25}"
+seastone_cuffs,Seastone Cuffs,1,"+4% defense, −15% speed for Devil Fruit users.","[{""stat"":""defense"",""flat"":0.04}]","{""dfSlow"":0.15}"
+seastone_cuffs,Seastone Cuffs,2,"+8% defense, −15% speed for Devil Fruit users.","[{""stat"":""defense"",""flat"":0.08}]","{""dfSlow"":0.15}"
+seastone_cuffs,Seastone Cuffs,3,"+12% defense, −15% speed for Devil Fruit users.","[{""stat"":""defense"",""flat"":0.12}]","{""dfSlow"":0.15}"
+seastone_cuffs,Seastone Cuffs,4,"+16% defense, −15% speed for Devil Fruit users.","[{""stat"":""defense"",""flat"":0.16}]","{""dfSlow"":0.15}"
+seastone_cuffs,Seastone Cuffs,5,"+20% defense, −15% speed for Devil Fruit users.","[{""stat"":""defense"",""flat"":0.2}]","{""dfSlow"":0.15}"

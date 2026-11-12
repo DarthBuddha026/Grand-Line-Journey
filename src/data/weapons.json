@@ -1,0 +1,115 @@
+[
+  { "id": "cannon_volley", "name": "Cannon Volley", "desc": "Lobs cannonballs that explode in random spots.", "color": "#8d6e63", "levels": [
+    { "desc": "Lob 2 cannonballs at random enemies.", "cooldown": 3.0, "action": { "type": "strike", "target": "random", "count": 2, "radius": 22, "dmg": 14, "delay": 0.8, "knockback": 80, "color": "#5d4037" } },
+    { "desc": "+1 cannonball.", "action": { "count": 3 } },
+    { "desc": "+30% damage.", "action": { "dmg": 18 } },
+    { "desc": "Fires more often.", "cooldown": 2.6 },
+    { "desc": "+1 cannonball, bigger blasts.", "action": { "count": 4, "radius": 26 } },
+    { "desc": "+33% damage.", "action": { "dmg": 24 } },
+    { "desc": "Max: 6 cannonballs per volley.", "action": { "count": 6 } } ] },
+  { "id": "flame_dial", "name": "Flame Dial", "desc": "A fire cone behind you.", "color": "#ff7043", "levels": [
+    { "desc": "Blast fire behind you; it burns.", "cooldown": 1.8, "action": { "type": "cone", "target": "back", "radius": 50, "arc": 70, "dmg": 6, "color": "#ff7043", "effects": { "burn": 4, "burnTime": 2 } } },
+    { "desc": "+33% damage.", "action": { "dmg": 8 } },
+    { "desc": "Longer flames.", "action": { "radius": 60 } },
+    { "desc": "Hotter burn.", "action": { "effects": { "burn": 6 } } },
+    { "desc": "Fires more often.", "cooldown": 1.4 },
+    { "desc": "Wider cone, +35% damage.", "action": { "arc": 100, "dmg": 11 } },
+    { "desc": "Max: a roaring inferno.", "action": { "radius": 75, "effects": { "burn": 10 } } } ] },
+  { "id": "impact_dial", "name": "Impact Dial", "desc": "A shockwave pulse around you.", "color": "#e8e2c8", "levels": [
+    { "desc": "Shockwave pulse around you.", "cooldown": 3.0, "action": { "type": "pulse", "radius": 46, "dmg": 8, "knockback": 140, "duration": 0.3 } },
+    { "desc": "+25% damage.", "action": { "dmg": 10 } },
+    { "desc": "Bigger shockwave.", "cooldown": 2.8, "action": { "radius": 58, "knockback": 150 } },
+    { "desc": "Pulses more often.", "cooldown": 2.3, "action": { "dmg": 11 } },
+    { "desc": "+30% damage.", "action": { "dmg": 14, "radius": 62, "knockback": 160 } },
+    { "desc": "Bigger shockwave.", "cooldown": 2.1, "action": { "dmg": 15, "radius": 72, "knockback": 170 } },
+    { "desc": "Max power: huge, frequent pulses.", "cooldown": 1.8, "action": { "dmg": 19, "radius": 82, "knockback": 190 } } ] },
+  { "id": "den_den_ring", "name": "Den Den Mushi Ring", "desc": "Snails orbit you and shout, stunning on contact.", "color": "#8fd16a", "levels": [
+    { "desc": "Snails orbit you and shout, stunning on contact.", "cooldown": 5.0, "action": { "type": "orbit", "count": 2, "duration": 3, "range": 44, "speed": 3.2, "size": 7, "dmg": 6, "tick": 0.6, "knockback": 40, "texture": "snail", "effects": { "stun": 0.4 } } },
+    { "desc": "+1 snail.", "action": { "count": 3 } },
+    { "desc": "Orbits last longer.", "action": { "duration": 4, "range": 48, "dmg": 7, "effects": { "stun": 0.5 } } },
+    { "desc": "+30% damage.", "action": { "dmg": 9, "size": 8 } },
+    { "desc": "+1 snail.", "cooldown": 4.5, "action": { "count": 4, "range": 52 } },
+    { "desc": "Wider, longer orbit.", "cooldown": 5.6, "action": { "duration": 5, "range": 58, "dmg": 11, "size": 9 } },
+    { "desc": "Max: 6 snails, nearly permanent.", "cooldown": 6.3, "action": { "count": 6, "duration": 6, "dmg": 13, "effects": { "stun": 0.7 } } } ] },
+  { "id": "seastone_chain", "name": "Seastone Chain", "desc": "A spinning chain whip; extra damage to Devil Fruit users.", "color": "#90a4ae", "levels": [
+    { "desc": "Whirl a seastone chain around you.", "cooldown": 3.0, "action": { "type": "sweep", "length": 60, "width": 8, "dmg": 10, "duration": 1.2, "speed": 6, "effects": { "vsDF": 0.5 } } },
+    { "desc": "+20% damage.", "action": { "dmg": 12 } },
+    { "desc": "Longer chain.", "action": { "length": 70 } },
+    { "desc": "Spins more often.", "cooldown": 2.5 },
+    { "desc": "+25% damage, heavier links.", "action": { "dmg": 15, "width": 10 } },
+    { "desc": "Longer spin, longer chain.", "action": { "duration": 1.6, "length": 80 } },
+    { "desc": "Max: crushes Devil Fruit users.", "action": { "dmg": 20, "effects": { "vsDF": 1 } } } ] },
+  { "id": "rankyaku", "name": "Rankyaku", "desc": "An air-blade kick projectile.", "color": "#bfe8ff", "levels": [
+    { "desc": "Air-blade kick toward the nearest enemy.", "cooldown": 1.6, "action": { "type": "volley", "target": "nearest", "count": 1, "spread": 14, "speed": 220, "range": 260, "pierce": 2, "size": 7, "dmg": 12, "texture": "blade" } },
+    { "desc": "+1 blade.", "action": { "count": 2 } },
+    { "desc": "Pierces 2 more enemies.", "cooldown": 1.5, "action": { "pierce": 4, "dmg": 13, "speed": 230, "range": 280 } },
+    { "desc": "+25% damage.", "action": { "dmg": 16, "size": 8 } },
+    { "desc": "+1 blade.", "cooldown": 1.4, "action": { "count": 3, "speed": 240, "range": 300 } },
+    { "desc": "Faster, sharper blades.", "cooldown": 1.25, "action": { "dmg": 19, "pierce": 6, "speed": 260, "range": 320, "size": 9 } },
+    { "desc": "Max: 4 blades that pierce everything in a line.", "cooldown": 1.1, "action": { "count": 4, "dmg": 22, "pierce": 99, "speed": 280, "range": 340, "size": 10, "spread": 12 } } ] },
+  { "id": "pacifista_laser", "name": "Pacifista Laser", "desc": "A beam that targets the toughest enemy.", "color": "#ff1744", "levels": [
+    { "desc": "Fire a laser at the toughest enemy nearby.", "cooldown": 3.5, "action": { "type": "beam", "target": "toughest", "length": 260, "width": 8, "dmg": 20, "duration": 0.4, "tick": 0.2, "color": "#ff1744" } },
+    { "desc": "+30% damage.", "action": { "dmg": 26 } },
+    { "desc": "Thicker beam.", "action": { "width": 10 } },
+    { "desc": "Fires more often.", "cooldown": 3.0 },
+    { "desc": "+30% damage, longer burn.", "action": { "dmg": 34, "duration": 0.6 } },
+    { "desc": "Longer reach.", "action": { "length": 320 } },
+    { "desc": "Max: devastating, frequent lasers.", "cooldown": 2.4, "action": { "dmg": 45 } } ] },
+  { "id": "sake_bottle", "name": "Sake Bottle", "desc": "A thrown bottle; the splash slows enemies.", "color": "#a1887f", "levels": [
+    { "desc": "Throw a bottle; the splash slows.", "cooldown": 2.2, "action": { "type": "strike", "target": "random", "count": 1, "radius": 28, "dmg": 8, "delay": 0.4, "color": "#a1887f", "effects": { "slow": 0.5, "slowTime": 2 } } },
+    { "desc": "+1 bottle.", "action": { "count": 2 } },
+    { "desc": "Bigger splash.", "action": { "radius": 34 } },
+    { "desc": "+50% damage.", "action": { "dmg": 12 } },
+    { "desc": "+1 bottle.", "action": { "count": 3 } },
+    { "desc": "Stronger, longer slow.", "action": { "effects": { "slow": 0.6, "slowTime": 3 } } },
+    { "desc": "Max: 4 bottles, +33% damage.", "action": { "count": 4, "dmg": 16 } } ] },
+  { "id": "wanted_posters", "name": "Wanted Posters", "desc": "Paper boomerangs that pierce.", "color": "#f5e6c8", "levels": [
+    { "desc": "Throw a wanted poster that flies out and back.", "cooldown": 2.0, "action": { "type": "volley", "target": "random", "count": 1, "speed": 180, "range": 140, "pierce": 99, "size": 6, "dmg": 9, "boomerang": true, "texture": "poster", "spread": 20 } },
+    { "desc": "+1 poster.", "action": { "count": 2 } },
+    { "desc": "+33% damage.", "action": { "dmg": 12 } },
+    { "desc": "Longer flight.", "action": { "range": 170 } },
+    { "desc": "+1 poster.", "action": { "count": 3 } },
+    { "desc": "+33% damage, bigger posters.", "action": { "dmg": 16, "size": 7 } },
+    { "desc": "Max: 4 posters, thrown faster.", "cooldown": 1.6, "action": { "count": 4 } } ] },
+  { "id": "sea_king_bait", "name": "Sea King Bait", "desc": "A Sea King bites a marked area.", "color": "#26a69a", "levels": [
+    { "desc": "Mark a spot; a Sea King bursts up and bites.", "cooldown": 5.0, "action": { "type": "strike", "target": "random", "count": 1, "radius": 40, "dmg": 35, "delay": 1.2, "knockback": 60, "color": "#26a69a" } },
+    { "desc": "+30% damage.", "action": { "dmg": 45 } },
+    { "desc": "Bigger bite.", "action": { "radius": 48 } },
+    { "desc": "Bites more often.", "cooldown": 4.2 },
+    { "desc": "+1 Sea King.", "action": { "count": 2 } },
+    { "desc": "+33% damage.", "action": { "dmg": 60 } },
+    { "desc": "Max: 3 Sea Kings, huge bites.", "action": { "count": 3, "radius": 56 } } ] },
+  { "id": "electro", "name": "Electro", "desc": "Chain lightning between enemies.", "color": "#80deea", "levels": [
+    { "desc": "Lightning jumps between 3 enemies.", "cooldown": 1.8, "action": { "type": "chain", "count": 1, "jumps": 3, "dmg": 10, "range": 80, "color": "#80deea", "effects": { "stun": 0.2 } } },
+    { "desc": "+1 jump.", "action": { "jumps": 4 } },
+    { "desc": "+30% damage.", "action": { "dmg": 13 } },
+    { "desc": "+1 chain.", "action": { "count": 2 } },
+    { "desc": "+2 jumps.", "action": { "jumps": 6 } },
+    { "desc": "+30% damage, faster.", "cooldown": 1.5, "action": { "dmg": 17 } },
+    { "desc": "Max: 3 chains of 8 jumps.", "action": { "count": 3, "jumps": 8 } } ] },
+  { "id": "tone_dial", "name": "Tone Dial", "desc": "Sound waves that push enemies back.", "color": "#e1bee7", "levels": [
+    { "desc": "Sound waves burst outward, pushing enemies away.", "cooldown": 3.0, "action": { "type": "volley", "ring": true, "count": 6, "speed": 120, "range": 90, "pierce": 99, "size": 10, "dmg": 4, "knockback": 200, "texture": "wave" } },
+    { "desc": "+2 waves.", "action": { "count": 8 } },
+    { "desc": "Stronger push.", "action": { "knockback": 260 } },
+    { "desc": "+75% damage.", "action": { "dmg": 7 } },
+    { "desc": "Waves travel further.", "action": { "range": 120 } },
+    { "desc": "+4 waves.", "action": { "count": 12 } },
+    { "desc": "Max: frequent, powerful waves.", "cooldown": 2.2, "action": { "dmg": 10 } } ] },
+
+  { "id": "buster_call", "name": "Buster Call", "desc": "Waves of bombardment across the screen.", "color": "#5d4037", "recipe": ["cannon_volley", "den_den_ring"], "levels": [
+    { "desc": "Alliance: call down a bombardment across the screen.", "cooldown": 4.0, "action": { "type": "strike", "target": "random", "count": 14, "radius": 30, "dmg": 45, "delay": 1.0, "knockback": 120, "color": "#5d4037" } } ] },
+  { "id": "gaon_cannon", "name": "Gaon Cannon", "desc": "A massive piercing beam on a cooldown.", "color": "#ff5722", "recipe": ["flame_dial", "pacifista_laser"], "levels": [
+    { "desc": "Alliance: a massive burning beam at the toughest enemy.", "cooldown": 5.0, "action": { "type": "beam", "target": "toughest", "length": 420, "width": 26, "dmg": 60, "duration": 0.8, "tick": 0.15, "color": "#ff5722", "effects": { "burn": 10, "burnTime": 3 } } } ] },
+  { "id": "reject_dial", "name": "Reject Dial", "desc": "A huge shockwave that costs a little HP per use.", "color": "#f5f5f5", "recipe": ["impact_dial", "tone_dial"], "levels": [
+    { "desc": "Alliance: a devastating shockwave (costs 3% HP).", "cooldown": 4.0, "action": { "type": "pulse", "radius": 160, "dmg": 120, "knockback": 400, "hpCost": 0.03, "duration": 0.4, "color": "#f5f5f5" } } ] },
+  { "id": "seraphim_ray", "name": "Seraphim Ray", "desc": "Lasers that chain between targets.", "color": "#ff1744", "recipe": ["pacifista_laser", "electro"], "levels": [
+    { "desc": "Alliance: a laser whose impact arcs to nearby enemies.", "cooldown": 2.5, "action": { "type": "multi", "actions": [
+      { "type": "beam", "target": "toughest", "length": 300, "width": 10, "dmg": 35, "duration": 0.5, "tick": 0.25, "color": "#ff1744" },
+      { "type": "chain", "count": 2, "jumps": 6, "dmg": 30, "range": 120, "color": "#ff8a80" } ] } } ] },
+  { "id": "storm_leg_tempest", "name": "Storm Leg Tempest", "desc": "Spiraling air blades.", "color": "#bfe8ff", "recipe": ["rankyaku", "wanted_posters"], "levels": [
+    { "desc": "Alliance: a spiral of air blades in every direction.", "cooldown": 1.2, "action": { "type": "volley", "ring": true, "spin": 22, "count": 8, "speed": 200, "range": 260, "pierce": 99, "size": 9, "dmg": 26, "texture": "blade" } } ] },
+  { "id": "sea_king_feast", "name": "Sea King Feast", "desc": "Slowed enemies get dragged under for heavy damage.", "color": "#26a69a", "recipe": ["sea_king_bait", "sake_bottle"], "levels": [
+    { "desc": "Alliance: Sea Kings drag slowed enemies under.", "cooldown": 3.0, "action": { "type": "multi", "actions": [
+      { "type": "strike", "target": "slowed", "count": 4, "radius": 34, "dmg": 70, "delay": 0.6, "color": "#26a69a" },
+      { "type": "strike", "target": "random", "count": 2, "radius": 34, "dmg": 20, "delay": 0.6, "color": "#a1887f", "effects": { "slow": 0.6, "slowTime": 3 } } ] } } ] }
+]

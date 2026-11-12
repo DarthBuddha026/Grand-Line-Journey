@@ -1,0 +1,18 @@
+id,name,archetype,hp,speed,damage,xp,radius,color,weak,berryChance,meatChance,dashSpeed,dashEvery,dashTime,range,fireEvery,projSpeed,projDamage,knockbackResist,devilFruit
+marine_recruit,Marine Recruit,fodder,8,30,4,1,6,#4a7bd1,true,0.02,0.004,,,,,,,,,
+pirate_grunt,Pirate Grunt,fodder,12,28,5,1,6,#9a6a44,true,0.03,0.004,,,,,,,,,
+sea_cat,Sea Cat,fast,9,24,5,2,6,#e0a83a,true,0.03,0.006,150,2.4,0.45,,,,,,
+musket_marine,Musket Marine,ranged,16,24,4,2,6,#2e4f8f,,0.05,0.008,,,,130,2.6,95,6,,
+blugori,Blugori,tank,80,19,9,6,10,#6f7f95,,0.15,0.03,,,,,,,,0.8,
+billions_grunt,Billions Agent,fodder,18,31,6,2,6,#c0a060,true,0.03,0.004,,,,,,,,,
+bananawani,Bananawani,fast,22,22,8,3,8,#7cb342,,0.04,0.01,165,2.6,0.5,,,,,0.3,
+baroque_agent,Baroque Works Agent,ranged,22,26,5,3,6,#6a1b9a,,0.05,0.008,,,,140,2.3,105,8,,
+hasami,Hasami Crab,tank,120,18,11,8,11,#d84315,,0.15,0.04,,,,,,,,0.85,
+enies_guard,Enies Lobby Guard,fodder,24,32,7,2,6,#90a4ae,true,0.03,0.004,,,,,,,,,
+wolf_unit,Wolf Unit,fast,26,26,8,3,7,#8d6e63,,0.04,0.01,175,2.2,0.45,,,,,,
+musket_squad,Musket Squad,ranged,28,25,6,3,6,#1a237e,,0.05,0.008,,,,150,2,115,9,,
+marine_giant,Giant Marine,tank,170,18,13,10,12,#cfd8dc,,0.18,0.04,,,,,,,,0.9,
+impel_jailer,Impel Down Jailer,fodder,30,33,8,2,6,#4e342e,true,0.03,0.004,,,,,,,,,
+hell_hound,Hell Hound,fast,30,27,9,3,7,#b71c1c,,0.04,0.01,185,2,0.45,,,,,,
+jailer_rifleman,Jailer Rifleman,ranged,32,25,7,3,6,#37474f,,0.05,0.008,,,,150,1.9,120,10,,
+minokoala,Minokoala,tank,210,19,14,12,12,#9e9e9e,,0.2,0.05,,,,,,,,0.9,false

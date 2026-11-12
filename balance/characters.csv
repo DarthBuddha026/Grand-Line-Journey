@@ -1,0 +1,18 @@
+id,name,crew,devilFruit,hp,atk,spd,crit,mainAttack,special,specialCooldown,specialAction,skills,unlock
+luffy,Luffy,straw_hat,true,70,1.1,1.4,0.05,gomu_pistol,Gear 5,60,transform,gatling / gear_second / conquerors_haki,default
+zoro,Zoro,straw_hat,false,85,1.25,1.25,0.07,oni_giri,Asura,60,transform,shishi_sonson / enma / lost,฿300
+nami,Nami,straw_hat,false,60,1,1.45,0.06,thunderbolt_tempo,Zeus Breeze Tempo,55,transform,mirage_tempo / cat_burglar / weather_egg,฿400
+usopp,Usopp,straw_hat,false,60,1.1,1.35,0.1,kabuto,Pop Green: Field,45,zone,observation_sniper / tabasco_star / captains_lie,฿400
+sanji,Sanji,straw_hat,false,75,1.15,1.5,0.06,diable_jambe,Ifrit Jambe,40,dash,sky_walk / chef / raid_suit,฿600
+chopper,Chopper,straw_hat,true,65,1,1.4,0.05,kung_fu_point,Monster Point,60,transform,rumble_ball / doctor / cotton_candy,฿600
+robin,Robin,straw_hat,true,65,1.1,1.3,0.06,hana_clutch,Gigantesco Mano,45,strike,mil_fleur / archaeologist / cien_fleur_wing,฿800
+franky,Franky,straw_hat,false,90,1,1.2,0.05,weapons_left,Radical Beam,40,beam,cola_engine / general_franky / super,฿900
+brook,Brook,straw_hat,true,55,1.1,1.45,0.08,soul_solid,Soul King Concert,50,screen,yohoho_revival / hanauta_sancho / frostbite,฿900
+jinbe,Jinbe,straw_hat,false,100,1.1,1.15,0.05,uchimizu,Vagabond Drill,45,zone,fishman_karate / helmsman / sea_child,impel_down
+akainu,Akainu,world_government,true,90,1.3,1.1,0.05,dai_funka,Ryusei Kazan,55,transform,absolute_justice / magma_pools / inugami_guren,฿2000
+kizaru,Kizaru,world_government,true,75,1.1,1.3,0.08,yasakani,Yata no Kagami,45,blink,ama_no_murakumo / light_speed_kick / so_scary,฿2000
+aokiji,Aokiji,world_government,true,80,1.15,1.2,0.06,ice_partisan,Ice Age,55,screen,ice_time / ice_bicycle / lazy_justice,฿2000
+garp,Garp,world_government,false,100,1.3,1.15,0.05,fist_of_love,Galaxy Impact,55,strike,cannonball_pitch / hero_of_marines / power_nap,hero_koby
+sengoku,Sengoku,world_government,true,90,1.15,1.15,0.05,buddha_palm,Great Buddha,60,transform,strategist / pet_goat / okaki_snack,grand_line
+magellan,Magellan,world_government,true,95,1.15,1.1,0.05,hydra,Venom Demon: Hell's Judgement,55,zone,poison_cloud / chief_warden / upset_stomach,฿1500
+koby,Koby,world_government,false,70,1.05,1.45,0.06,rokushiki,Honesty Impact,45,beam,observation_haki / soru / heros_will,default

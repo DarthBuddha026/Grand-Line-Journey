@@ -1,0 +1,19 @@
+[
+  { "id": "first_voyage", "name": "First Voyage", "desc": "Finish a run.", "cond": { "type": "runs", "n": 1 }, "reward": { "berries": 100 } },
+  { "id": "east_blue", "name": "East Blue Rookie", "desc": "Clear Shells Town.", "cond": { "type": "clearStage", "stage": "shells_town" }, "reward": { "berries": 300 } },
+  { "id": "alabasta", "name": "Saviour of Alabasta", "desc": "Clear Alabasta Desert.", "cond": { "type": "clearStage", "stage": "alabasta" }, "reward": { "berries": 500 } },
+  { "id": "enies_lobby", "name": "Declaration of War", "desc": "Clear Enies Lobby.", "cond": { "type": "clearStage", "stage": "enies_lobby" }, "reward": { "berries": 800 } },
+  { "id": "impel_down", "name": "Great Jailbreak", "desc": "Clear Impel Down. Unlocks Jinbe.", "cond": { "type": "clearStage", "stage": "impel_down" }, "reward": { "berries": 1000, "unlock": "jinbe" } },
+  { "id": "grand_line", "name": "Master of the Grand Line", "desc": "Clear all four stages. Unlocks Sengoku.", "cond": { "type": "clearAll" }, "reward": { "berries": 2000, "unlock": "sengoku" } },
+  { "id": "hero_koby", "name": "A Marine's Dream", "desc": "Clear Shells Town as Koby. Unlocks Garp.", "cond": { "type": "clearStage", "stage": "shells_town", "character": "koby" }, "reward": { "unlock": "garp" } },
+  { "id": "sogeking", "name": "Sniper Island", "desc": "Clear Enies Lobby as Usopp.", "cond": { "type": "clearStage", "stage": "enies_lobby", "character": "usopp" }, "reward": { "berries": 1500 } },
+  { "id": "kills_1000", "name": "One-Man Army", "desc": "Defeat 1,000 enemies in one run.", "cond": { "type": "kills", "n": 1000 }, "reward": { "berries": 300 } },
+  { "id": "kills_3000", "name": "Sea of Bodies", "desc": "Defeat 3,000 enemies in one run.", "cond": { "type": "kills", "n": 3000 }, "reward": { "berries": 800 } },
+  { "id": "level_30", "name": "Supernova", "desc": "Reach level 30 in a run.", "cond": { "type": "level", "n": 30 }, "reward": { "berries": 300 } },
+  { "id": "level_60", "name": "Emperor Class", "desc": "Reach level 60 in a run.", "cond": { "type": "level", "n": 60 }, "reward": { "berries": 800 } },
+  { "id": "bounty_100m", "name": "Hundred Million", "desc": "Earn a ฿100,000,000 bounty.", "cond": { "type": "bounty", "n": 100000000 }, "reward": { "berries": 500 } },
+  { "id": "bounty_300m", "name": "Worst Generation", "desc": "Earn a ฿300,000,000 bounty.", "cond": { "type": "bounty", "n": 300000000 }, "reward": { "berries": 1500 } },
+  { "id": "alliance_1", "name": "Pirate Alliance", "desc": "Discover an Alliance.", "cond": { "type": "alliances", "n": 1 }, "reward": { "berries": 300 } },
+  { "id": "alliance_all", "name": "Grand Fleet", "desc": "Discover every Alliance.", "cond": { "type": "alliances", "n": 6 }, "reward": { "berries": 2000 } },
+  { "id": "endless_30", "name": "Endless Voyage", "desc": "Survive 30 minutes in one run.", "cond": { "type": "survive", "sec": 1800 }, "reward": { "berries": 1000 } }
+]

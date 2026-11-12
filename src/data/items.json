@@ -1,0 +1,16 @@
+[
+  { "id": "meat_on_the_bone", "name": "Meat on the Bone", "desc": "More healing from food.", "color": "#a2452a", "perLevel": { "mods": { "healMul": 0.2 } }, "max": { "mods": { "regen": 0.3 } } },
+  { "id": "vivre_card", "name": "Vivre Card", "desc": "Revive once at half HP.", "color": "#f5f5f5", "base": { "mods": { "revives": 1 } }, "perLevel": { "stats": [{ "stat": "maxHp", "pct": 0.04 }] } },
+  { "id": "log_pose", "name": "Log Pose", "desc": "Bigger pickup range.", "color": "#7ec8e3", "perLevel": { "stats": [{ "stat": "pickup", "pct": 0.3 }] }, "max": { "stats": [{ "stat": "xpGain", "pct": 0.1 }] } },
+  { "id": "eternal_pose", "name": "Eternal Pose", "desc": "More XP.", "color": "#4dd0e1", "perLevel": { "stats": [{ "stat": "xpGain", "pct": 0.08 }] } },
+  { "id": "treasure_map", "name": "Treasure Map", "desc": "More chests.", "color": "#d7b46a", "perLevel": { "mods": { "chestRate": 0.3 } } },
+  { "id": "bounty_poster", "name": "Bounty Poster", "desc": "More Berries, but more enemies spawn.", "color": "#f5e6c8", "perLevel": { "mods": { "berryMul": 0.25, "spawnMul": 0.06 } } },
+  { "id": "adam_wood", "name": "Adam Wood", "desc": "More max HP.", "color": "#b07a45", "perLevel": { "stats": [{ "stat": "maxHp", "pct": 0.1 }] }, "max": { "stats": [{ "stat": "defense", "flat": 0.05 }] } },
+  { "id": "cola_barrel", "name": "Cola Barrel", "desc": "More move speed.", "color": "#5a3a22", "perLevel": { "stats": [{ "stat": "spd", "pct": 0.08 }] }, "max": { "stats": [{ "stat": "haste", "flat": 0.05 }] } },
+  { "id": "coup_de_burst", "name": "Coup de Burst", "desc": "An emergency dash when hit below 30% HP.", "color": "#29b6f6", "perLevel": { "mods": { "emergencyDash": 1 } } },
+  { "id": "sake_cup", "name": "Sake Cup", "desc": "More crit chance, slight aim wobble.", "color": "#ce93d8", "perLevel": { "stats": [{ "stat": "crit", "flat": 0.04 }], "mods": { "aimWobble": 0.03 } } },
+  { "id": "jolly_roger", "name": "Jolly Roger", "desc": "More damage for each weapon at max level.", "color": "#212121", "perLevel": { "mods": { "maxedWeaponDmg": 0.04 } } },
+  { "id": "klabautermann", "name": "Klabautermann", "desc": "A shield that recharges between hits.", "color": "#ffb74d", "perLevel": { "mods": { "shieldMax": 6 } } },
+  { "id": "gold_doubloon", "name": "Gold Doubloon", "desc": "Chests can give one extra upgrade.", "color": "#ffd54f", "perLevel": { "mods": { "chestExtra": 0.15, "luck": 0.05 } } },
+  { "id": "seastone_cuffs", "name": "Seastone Cuffs", "desc": "More defense; Devil Fruit users lose speed.", "color": "#78909c", "base": { "mods": { "dfSlow": 0.15 } }, "perLevel": { "stats": [{ "stat": "defense", "flat": 0.04 }] } }
+]

@@ -1,0 +1,222 @@
+[
+  { "id": "gatling", "name": "Gatling", "trigger": "mainAttack", "levels": [
+    { "desc": "Every 5th punch becomes a 5-hit flurry.", "every": 5, "action": { "type": "flurry", "count": 5, "dmgMul": 0.6 } },
+    { "desc": "Flurry throws 7 punches.", "action": { "count": 7, "dmgMul": 0.7 } },
+    { "desc": "Every 4th punch is a 9-hit flurry.", "every": 4, "action": { "count": 9, "dmgMul": 0.8 } } ] },
+  { "id": "gear_second", "name": "Gear Second", "trigger": "hurt", "levels": [
+    { "desc": "After taking damage: +30% attack speed, +20% move speed for 3 s.", "duration": 3, "stats": [{ "stat": "haste", "flat": 0.3 }, { "stat": "spd", "pct": 0.2 }] },
+    { "desc": "+40% attack speed, +25% move speed for 4 s.", "duration": 4, "stats": [{ "stat": "haste", "flat": 0.4 }, { "stat": "spd", "pct": 0.25 }] },
+    { "desc": "+50% attack speed, +30% move speed for 5 s.", "duration": 5, "stats": [{ "stat": "haste", "flat": 0.5 }, { "stat": "spd", "pct": 0.3 }] } ] },
+  { "id": "conquerors_haki", "name": "Conqueror's Haki", "trigger": "periodic", "levels": [
+    { "desc": "Every 12 s a pulse knocks out weak enemies nearby and stuns the rest.", "every": 12, "action": { "type": "pulse", "radius": 90, "dmg": 0, "killWeak": true, "color": "#9b59ff", "effects": { "stun": 1 } } },
+    { "desc": "Pulse every 10 s, wider.", "every": 10, "action": { "radius": 115, "effects": { "stun": 1.25 } } },
+    { "desc": "Pulse every 8 s, huge radius.", "every": 8, "action": { "radius": 145, "effects": { "stun": 1.5 } } } ] },
+
+  { "id": "shishi_sonson", "name": "Shishi Sonson", "trigger": "periodic", "levels": [
+    { "desc": "Every 5 s, dash-slash through the nearest enemies.", "every": 5, "action": { "type": "dash", "target": "nearest", "distance": 110, "dmg": 30, "width": 16 } },
+    { "desc": "Every 4 s, +33% damage.", "every": 4, "action": { "dmg": 40 } },
+    { "desc": "Every 3 s, longer and stronger.", "every": 3, "action": { "dmg": 55, "distance": 140 } } ] },
+  { "id": "enma", "name": "Enma", "trigger": "passive", "levels": [
+    { "desc": "+15% damage, but each hit drains a sliver of your HP.", "stats": [{ "stat": "atk", "pct": 0.15 }], "mods": { "selfDrain": 0.04 } },
+    { "desc": "+30% damage.", "stats": [{ "stat": "atk", "pct": 0.3 }] },
+    { "desc": "+45% damage.", "stats": [{ "stat": "atk", "pct": 0.45 }] } ] },
+  { "id": "lost", "name": "Lost", "trigger": "custom", "custom": "lost", "levels": [
+    { "desc": "Your movement drifts randomly, but +10% crit chance and +30% crit damage.", "stats": [{ "stat": "crit", "flat": 0.1 }], "mods": { "critDmg": 0.3 }, "params": { "drift": 0.35 } },
+    { "desc": "+15% crit chance, +50% crit damage.", "stats": [{ "stat": "crit", "flat": 0.15 }], "mods": { "critDmg": 0.5 } },
+    { "desc": "+20% crit chance, +80% crit damage.", "stats": [{ "stat": "crit", "flat": 0.2 }], "mods": { "critDmg": 0.8 } } ] },
+
+  { "id": "mirage_tempo", "name": "Mirage Tempo", "trigger": "passive", "levels": [
+    { "desc": "8% chance to dodge a hit with a mirage decoy.", "mods": { "dodge": 0.08 } },
+    { "desc": "12% dodge chance.", "mods": { "dodge": 0.12 } },
+    { "desc": "18% dodge chance.", "mods": { "dodge": 0.18 } } ] },
+  { "id": "cat_burglar", "name": "Cat Burglar", "trigger": "passive", "levels": [
+    { "desc": "+25% Berries, +20% pickup range.", "mods": { "berryMul": 0.25 }, "stats": [{ "stat": "pickup", "pct": 0.2 }] },
+    { "desc": "+50% Berries, +40% pickup range.", "mods": { "berryMul": 0.5 }, "stats": [{ "stat": "pickup", "pct": 0.4 }] },
+    { "desc": "+80% Berries, +60% pickup range.", "mods": { "berryMul": 0.8 }, "stats": [{ "stat": "pickup", "pct": 0.6 }] } ] },
+  { "id": "weather_egg", "name": "Weather Egg", "trigger": "periodic", "levels": [
+    { "desc": "Every 10 s a weather zone spawns; inside it you get +20% damage and attack speed.", "every": 10, "action": { "type": "zone", "target": "player", "radius": 40, "duration": 5, "dmg": 0, "color": "#ffe082", "stats": [{ "stat": "atk", "pct": 0.2 }, { "stat": "haste", "flat": 0.2 }] } },
+    { "desc": "Every 8 s, bigger zone.", "every": 8, "action": { "radius": 50 } },
+    { "desc": "Every 6 s, +30% damage and attack speed.", "every": 6, "action": { "stats": [{ "stat": "atk", "pct": 0.3 }, { "stat": "haste", "flat": 0.3 }] } } ] },
+
+  { "id": "observation_sniper", "name": "Observation Sniper", "trigger": "passive", "levels": [
+    { "desc": "+8% damage per 100 px of distance to the target.", "mods": { "farDmg": 0.08 } },
+    { "desc": "+14% damage per 100 px.", "mods": { "farDmg": 0.14 } },
+    { "desc": "+20% damage per 100 px.", "mods": { "farDmg": 0.2 } } ] },
+  { "id": "tabasco_star", "name": "Tabasco Star", "trigger": "passive", "levels": [
+    { "desc": "Hits set enemies on fire (3 dps).", "mods": { "burnOnHit": 3 } },
+    { "desc": "Burn 5 dps.", "mods": { "burnOnHit": 5 } },
+    { "desc": "Burn 8 dps.", "mods": { "burnOnHit": 8 } } ] },
+  { "id": "captains_lie", "name": "Captain Usopp's Lie", "trigger": "passive", "levels": [
+    { "desc": "5% chance per hit that the enemy flees in fear.", "mods": { "fearOnHit": 0.05 } },
+    { "desc": "10% fear chance.", "mods": { "fearOnHit": 0.1 } },
+    { "desc": "15% fear chance.", "mods": { "fearOnHit": 0.15 } } ] },
+
+  { "id": "sky_walk", "name": "Sky Walk", "trigger": "passive", "levels": [
+    { "desc": "Air-step: 6% dodge chance and +8% move speed.", "mods": { "dodge": 0.06 }, "stats": [{ "stat": "spd", "pct": 0.08 }] },
+    { "desc": "10% dodge, +12% speed.", "mods": { "dodge": 0.1 }, "stats": [{ "stat": "spd", "pct": 0.12 }] },
+    { "desc": "15% dodge, +16% speed.", "mods": { "dodge": 0.15 }, "stats": [{ "stat": "spd", "pct": 0.16 }] } ] },
+  { "id": "chef", "name": "Chef", "trigger": "passive", "levels": [
+    { "desc": "Food heals 50% more and grants a short damage buff.", "mods": { "healMul": 0.5, "foodBuff": 1 } },
+    { "desc": "Food heals 75% more.", "mods": { "healMul": 0.75 } },
+    { "desc": "Food heals twice as much.", "mods": { "healMul": 1.0 } } ] },
+  { "id": "raid_suit", "name": "Raid Suit", "trigger": "passive", "levels": [
+    { "desc": "Turn invisible (invulnerable) for 2 s after your Special.", "mods": { "postSpecialInvuln": 2 } },
+    { "desc": "3.5 s of invisibility.", "mods": { "postSpecialInvuln": 3.5 } },
+    { "desc": "5 s of invisibility and +10% damage.", "mods": { "postSpecialInvuln": 5 }, "stats": [{ "stat": "atk", "pct": 0.1 }] } ] },
+
+  { "id": "rumble_ball", "name": "Rumble Ball", "trigger": "custom", "custom": "rumbleBall", "levels": [
+    { "desc": "Cycle every 8 s between Heavy Point (+30% defense) and Walk Point (+30% speed).", "params": { "period": 8, "def": 0.3, "spd": 0.3 } },
+    { "desc": "+40% defense / +40% speed.", "params": { "def": 0.4, "spd": 0.4 } },
+    { "desc": "+50% defense / +50% speed.", "params": { "def": 0.5, "spd": 0.5 } } ] },
+  { "id": "doctor", "name": "Doctor", "trigger": "passive", "levels": [
+    { "desc": "Regenerate 0.5 HP per second.", "mods": { "regen": 0.5 } },
+    { "desc": "Regenerate 1 HP per second.", "mods": { "regen": 1.0 } },
+    { "desc": "Regenerate 1.6 HP per second.", "mods": { "regen": 1.6 } } ] },
+  { "id": "cotton_candy", "name": "Cotton Candy", "trigger": "passive", "levels": [
+    { "desc": "Food also gives 8 XP and heals 20% more.", "mods": { "foodXp": 8, "healMul": 0.2 } },
+    { "desc": "Food gives 15 XP.", "mods": { "foodXp": 15 } },
+    { "desc": "Food gives 25 XP.", "mods": { "foodXp": 25 } } ] },
+
+  { "id": "mil_fleur", "name": "Mil Fleur", "trigger": "passive", "levels": [
+    { "desc": "+1 arm per main attack.", "mods": { "mainExtraCount": 1 } },
+    { "desc": "+2 arms per main attack.", "mods": { "mainExtraCount": 2 } },
+    { "desc": "+3 arms per main attack.", "mods": { "mainExtraCount": 3 } } ] },
+  { "id": "archaeologist", "name": "Archaeologist", "trigger": "passive", "levels": [
+    { "desc": "Chests are richer: 20% chance of the max 3 upgrades.", "mods": { "chestRarity": 0.2, "chestExtra": 0.2, "luck": 0.1 } },
+    { "desc": "40% chance of 3 upgrades.", "mods": { "chestRarity": 0.4, "chestExtra": 0.35 } },
+    { "desc": "60% chance of 3 upgrades.", "mods": { "chestRarity": 0.6, "chestExtra": 0.5 } } ] },
+  { "id": "cien_fleur_wing", "name": "Cien Fleur: Wing", "trigger": "passive", "levels": [
+    { "desc": "Glide: +10% move speed and ignore terrain hazards.", "mods": { "ignoreHazards": 1 }, "stats": [{ "stat": "spd", "pct": 0.1 }] },
+    { "desc": "+18% move speed.", "stats": [{ "stat": "spd", "pct": 0.18 }] },
+    { "desc": "+25% move speed.", "stats": [{ "stat": "spd", "pct": 0.25 }] } ] },
+
+  { "id": "cola_engine", "name": "Cola Engine", "trigger": "periodic", "levels": [
+    { "desc": "Every 12 s, a cola burst: +40% attack speed, +30% move speed for 4 s.", "every": 12, "action": { "type": "buff", "duration": 4, "stats": [{ "stat": "haste", "flat": 0.4 }, { "stat": "spd", "pct": 0.3 }] } },
+    { "desc": "Every 10 s.", "every": 10 },
+    { "desc": "Every 8 s, lasts 5 s.", "every": 8, "action": { "duration": 5 } } ] },
+  { "id": "general_franky", "name": "General Franky", "trigger": "passive", "levels": [
+    { "desc": "A mech shield absorbs 10 damage and recharges between hits.", "mods": { "shieldMax": 10 } },
+    { "desc": "Shield 18.", "mods": { "shieldMax": 18 } },
+    { "desc": "Shield 28.", "mods": { "shieldMax": 28 } } ] },
+  { "id": "super", "name": "SUPER!", "trigger": "periodic", "levels": [
+    { "desc": "Every 15 s strike a pose: 2 s invulnerable and +40% damage.", "every": 15, "action": { "type": "buff", "duration": 2, "invuln": true, "stats": [{ "stat": "atk", "pct": 0.4 }] } },
+    { "desc": "Every 12 s, +60% damage.", "every": 12, "action": { "stats": [{ "stat": "atk", "pct": 0.6 }] } },
+    { "desc": "Every 10 s, lasts 3 s.", "every": 10, "action": { "duration": 3 } } ] },
+
+  { "id": "yohoho_revival", "name": "Yohoho Revival", "trigger": "passive", "levels": [
+    { "desc": "Revive once per run at half HP.", "mods": { "revives": 1 } },
+    { "desc": "+10% max HP.", "stats": [{ "stat": "maxHp", "pct": 0.1 }] },
+    { "desc": "Revive twice per run.", "mods": { "revives": 2 } } ] },
+  { "id": "hanauta_sancho", "name": "Hanauta Sancho", "trigger": "periodic", "levels": [
+    { "desc": "Every 6 s, dash past enemies; they split apart a moment later.", "every": 6, "action": { "type": "dash", "target": "nearest", "distance": 100, "dmg": 35, "width": 18 } },
+    { "desc": "Every 5 s, +40% damage.", "every": 5, "action": { "dmg": 50 } },
+    { "desc": "Every 4 s, +40% damage.", "every": 4, "action": { "dmg": 70 } } ] },
+  { "id": "frostbite", "name": "Frostbite", "trigger": "passive", "levels": [
+    { "desc": "Hits chill: 20% slow and 2 cold damage per second.", "mods": { "slowOnHit": 0.2, "burnOnHit": 2 } },
+    { "desc": "30% slow, 4 dps.", "mods": { "slowOnHit": 0.3, "burnOnHit": 4 } },
+    { "desc": "40% slow, 6 dps.", "mods": { "slowOnHit": 0.4, "burnOnHit": 6 } } ] },
+
+  { "id": "fishman_karate", "name": "Fish-Man Karate", "trigger": "passive", "levels": [
+    { "desc": "+50% knockback and +10% damage.", "mods": { "knockbackMul": 0.5 }, "stats": [{ "stat": "atk", "pct": 0.1 }] },
+    { "desc": "+90% knockback, +15% damage.", "mods": { "knockbackMul": 0.9 }, "stats": [{ "stat": "atk", "pct": 0.15 }] },
+    { "desc": "+140% knockback, +20% damage.", "mods": { "knockbackMul": 1.4 }, "stats": [{ "stat": "atk", "pct": 0.2 }] } ] },
+  { "id": "helmsman", "name": "Helmsman", "trigger": "passive", "levels": [
+    { "desc": "Steady footing: ignore slows, +6% move speed.", "mods": { "noSlow": 1 }, "stats": [{ "stat": "spd", "pct": 0.06 }] },
+    { "desc": "+10% move speed.", "stats": [{ "stat": "spd", "pct": 0.1 }] },
+    { "desc": "+15% move speed, immune to knockback.", "stats": [{ "stat": "spd", "pct": 0.15 }], "mods": { "knockbackImmune": 1 } } ] },
+  { "id": "sea_child", "name": "Sea Child", "trigger": "passive", "levels": [
+    { "desc": "Seawater heals you instead of slowing you.", "mods": { "seawaterHeals": 1 } },
+    { "desc": "Also regenerate 0.3 HP per second.", "mods": { "regen": 0.3 } },
+    { "desc": "Regenerate 0.6 HP per second.", "mods": { "regen": 0.6 } } ] },
+
+  { "id": "absolute_justice", "name": "Absolute Justice", "trigger": "passive", "levels": [
+    { "desc": "+25% damage to elites and bosses.", "mods": { "eliteDmg": 0.25 } },
+    { "desc": "+45% damage to elites and bosses.", "mods": { "eliteDmg": 0.45 } },
+    { "desc": "+70% damage to elites and bosses.", "mods": { "eliteDmg": 0.7 } } ] },
+  { "id": "magma_pools", "name": "Magma Pools", "trigger": "passive", "levels": [
+    { "desc": "4% of hits leave a pool of burning ground.", "mods": { "magmaPools": 0.04 } },
+    { "desc": "7% of hits.", "mods": { "magmaPools": 0.07 } },
+    { "desc": "10% of hits.", "mods": { "magmaPools": 0.1 } } ] },
+  { "id": "inugami_guren", "name": "Inugami Guren", "trigger": "periodic", "levels": [
+    { "desc": "Every 6 s, a magma-hound dash that leaves burning ground.", "every": 6, "action": { "type": "dash", "target": "nearest", "distance": 120, "dmg": 40, "width": 18, "trail": { "type": "zone", "radius": 14, "duration": 3, "dmg": 6, "tick": 0.4, "color": "#ff7043", "effects": { "burn": 4, "burnTime": 2 } } } },
+    { "desc": "Every 5 s.", "every": 5 },
+    { "desc": "Every 4 s, +50% damage.", "every": 4, "action": { "dmg": 60 } } ] },
+
+  { "id": "ama_no_murakumo", "name": "Ama no Murakumo", "trigger": "periodic", "levels": [
+    { "desc": "Every 5 s, a wide light-sword sweep.", "every": 5, "action": { "type": "cone", "radius": 90, "arc": 160, "dmg": 30, "color": "#fff59d" } },
+    { "desc": "Every 4 s, +33% damage.", "every": 4, "action": { "dmg": 40 } },
+    { "desc": "Every 3 s, longer blade.", "every": 3, "action": { "radius": 110 } } ] },
+  { "id": "light_speed_kick", "name": "Light-Speed Kick", "trigger": "periodic", "levels": [
+    { "desc": "Every 6 s, kick the toughest enemy for huge damage.", "every": 6, "action": { "type": "strike", "target": "toughest", "count": 1, "radius": 18, "dmg": 120, "delay": 0.05, "knockback": 250, "color": "#fff59d" } },
+    { "desc": "+50% damage.", "action": { "dmg": 180 } },
+    { "desc": "Every 4 s, +40% damage.", "every": 4, "action": { "dmg": 250 } } ] },
+  { "id": "so_scary", "name": "\"So Scary~\"", "trigger": "passive", "levels": [
+    { "desc": "Lazy: walk 15% slower, attack 30% faster.", "stats": [{ "stat": "spd", "pct": -0.15 }, { "stat": "haste", "flat": 0.3 }] },
+    { "desc": "Attack 45% faster.", "stats": [{ "stat": "spd", "pct": -0.15 }, { "stat": "haste", "flat": 0.45 }] },
+    { "desc": "Attack 60% faster.", "stats": [{ "stat": "spd", "pct": -0.15 }, { "stat": "haste", "flat": 0.6 }] } ] },
+
+  { "id": "ice_time", "name": "Ice Time", "trigger": "passive", "levels": [
+    { "desc": "Frozen and stunned enemies shatter for +30% damage; hits chill 10%.", "mods": { "stunnedDmg": 0.3, "slowOnHit": 0.1 } },
+    { "desc": "+55% damage vs frozen.", "mods": { "stunnedDmg": 0.55 } },
+    { "desc": "+80% damage vs frozen.", "mods": { "stunnedDmg": 0.8 } } ] },
+  { "id": "ice_bicycle", "name": "Ice Bicycle", "trigger": "passive", "levels": [
+    { "desc": "Freeze seawater as you ride: no water penalty, speed boost on water, +8% speed.", "mods": { "waterWalker": 1 }, "stats": [{ "stat": "spd", "pct": 0.08 }] },
+    { "desc": "+14% move speed.", "stats": [{ "stat": "spd", "pct": 0.14 }] },
+    { "desc": "+20% move speed.", "stats": [{ "stat": "spd", "pct": 0.2 }] } ] },
+  { "id": "lazy_justice", "name": "Lazy Justice", "trigger": "custom", "custom": "lazyJustice", "levels": [
+    { "desc": "Standing still heals 2 HP/s and charges your Special 50% faster.", "params": { "heal": 2, "charge": 0.5 } },
+    { "desc": "3 HP/s, Special charges 80% faster.", "params": { "heal": 3, "charge": 0.8 } },
+    { "desc": "4 HP/s, Special charges 120% faster.", "params": { "heal": 4, "charge": 1.2 } } ] },
+
+  { "id": "cannonball_pitch", "name": "Cannonball Pitch", "trigger": "periodic", "levels": [
+    { "desc": "Every 3 s, throw 2 cannonballs by hand.", "every": 3, "action": { "type": "strike", "target": "random", "count": 2, "radius": 24, "dmg": 30, "delay": 0.7, "knockback": 120, "color": "#424242" } },
+    { "desc": "3 cannonballs.", "action": { "count": 3 } },
+    { "desc": "5 cannonballs, +33% damage.", "action": { "count": 5, "dmg": 40 } } ] },
+  { "id": "hero_of_marines", "name": "Hero of the Marines", "trigger": "passive", "levels": [
+    { "desc": "+20% max HP and immune to knockback.", "stats": [{ "stat": "maxHp", "pct": 0.2 }], "mods": { "knockbackImmune": 1 } },
+    { "desc": "+35% max HP.", "stats": [{ "stat": "maxHp", "pct": 0.35 }] },
+    { "desc": "+50% max HP.", "stats": [{ "stat": "maxHp", "pct": 0.5 }] } ] },
+  { "id": "power_nap", "name": "Power Nap", "trigger": "custom", "custom": "powerNap", "levels": [
+    { "desc": "Every 30 s you doze off for 1.5 s, then wake fully healed.", "params": { "every": 30, "sleep": 1.5 } },
+    { "desc": "Every 25 s.", "params": { "every": 25 } },
+    { "desc": "Every 20 s, only 1 s naps.", "params": { "every": 20, "sleep": 1 } } ] },
+
+  { "id": "strategist", "name": "The Strategist", "trigger": "passive", "levels": [
+    { "desc": "5 level-up choices instead of 4.", "mods": { "extraChoices": 1 } },
+    { "desc": "+10% XP gain.", "stats": [{ "stat": "xpGain", "pct": 0.1 }] },
+    { "desc": "+20% XP gain and better luck.", "stats": [{ "stat": "xpGain", "pct": 0.2 }], "mods": { "luck": 0.2 } } ] },
+  { "id": "pet_goat", "name": "Pet Goat", "trigger": "periodic", "levels": [
+    { "desc": "Every 20 s your goat gathers every drop on the field for you.", "every": 20, "action": { "type": "magnet" } },
+    { "desc": "Every 15 s.", "every": 15 },
+    { "desc": "Every 10 s.", "every": 10 } ] },
+  { "id": "okaki_snack", "name": "Okaki Snack", "trigger": "periodic", "levels": [
+    { "desc": "Every 15 s, munch rice crackers to heal 8% HP.", "every": 15, "action": { "type": "heal", "frac": 0.08 } },
+    { "desc": "Every 12 s, heal 10%.", "every": 12, "action": { "frac": 0.1 } },
+    { "desc": "Every 10 s, heal 12%.", "every": 10, "action": { "frac": 0.12 } } ] },
+
+  { "id": "poison_cloud", "name": "Poison Cloud", "trigger": "periodic", "levels": [
+    { "desc": "A toxic aura poisons nearby enemies.", "every": 3, "action": { "type": "zone", "follow": true, "radius": 40, "duration": 3.05, "dmg": 4, "tick": 0.5, "color": "#8e24aa", "effects": { "burn": 3, "burnTime": 2 } } },
+    { "desc": "Bigger, stronger aura.", "action": { "radius": 52, "dmg": 6 } },
+    { "desc": "Huge, deadly aura.", "action": { "radius": 64, "dmg": 9 } } ] },
+  { "id": "chief_warden", "name": "Chief Warden", "trigger": "passive", "levels": [
+    { "desc": "+8% defense, +15% max HP.", "stats": [{ "stat": "defense", "flat": 0.08 }, { "stat": "maxHp", "pct": 0.15 }] },
+    { "desc": "+14% defense, +25% max HP.", "stats": [{ "stat": "defense", "flat": 0.14 }, { "stat": "maxHp", "pct": 0.25 }] },
+    { "desc": "+20% defense, +35% max HP.", "stats": [{ "stat": "defense", "flat": 0.2 }, { "stat": "maxHp", "pct": 0.35 }] } ] },
+  { "id": "upset_stomach", "name": "Upset Stomach", "trigger": "custom", "custom": "upsetStomach", "levels": [
+    { "desc": "Every 20 s you stop attacking for 1.5 s, then hit 3× harder for 3 s.", "params": { "every": 20, "pause": 1.5, "mul": 3 } },
+    { "desc": "4× harder.", "params": { "mul": 4 } },
+    { "desc": "Every 15 s, 5× harder.", "params": { "every": 15, "mul": 5 } } ] },
+
+  { "id": "observation_haki", "name": "Observation Haki", "trigger": "passive", "levels": [
+    { "desc": "8% auto-dodge, earlier boss warnings, see threats off-screen.", "mods": { "dodge": 0.08, "eliteRadar": 1, "telegraphLead": 0.2 } },
+    { "desc": "13% auto-dodge.", "mods": { "dodge": 0.13 } },
+    { "desc": "18% auto-dodge.", "mods": { "dodge": 0.18 } } ] },
+  { "id": "soru", "name": "Soru", "trigger": "periodic", "levels": [
+    { "desc": "Every 5 s, blink-dash along your aim, hitting what you pass.", "every": 5, "action": { "type": "dash", "target": "aim", "distance": 90, "dmg": 20, "width": 14 } },
+    { "desc": "Every 4 s, +50% damage.", "every": 4, "action": { "dmg": 30 } },
+    { "desc": "Every 3 s, +33% damage.", "every": 3, "action": { "dmg": 40 } } ] },
+  { "id": "heros_will", "name": "Hero's Will", "trigger": "passive", "levels": [
+    { "desc": "Up to +30% damage as your HP drops.", "mods": { "lowHpDmg": 0.3 } },
+    { "desc": "Up to +50% damage.", "mods": { "lowHpDmg": 0.5 } },
+    { "desc": "Up to +80% damage.", "mods": { "lowHpDmg": 0.8 } } ] }
+]
