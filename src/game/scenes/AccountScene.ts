@@ -42,20 +42,20 @@ export class AccountScene extends Phaser.Scene {
 
     const can = googleConfigured();
     const rows: [string, string, () => void, 'gold' | 'sea'][] = [
-      ['Sign in with Google', can ? 'Saved to your Google account: keep it on any device.' : 'Google sign-in is not set up in this build yet.', () => this.google(), 'gold'],
+      ['Log in or Create an Account', can ? 'Saved to your Google account: keep it on any device.' : 'Google sign-in is not set up in this build yet.', () => this.google(), 'gold'],
       ['Play as guest', 'No account. Progress is erased when you close the browser.', () => this.guest(), 'sea'],
     ];
     rows.forEach(([text, note, act, variant], i) => {
       const y = CARD.y + 160 + i * 104;
-      const b = new Button(this, GAME_W / 2, y, 420, 62, text, act, variant);
+      const b = new Button(this, GAME_W / 2, y, 460, 62, text, act, variant);
       if (i === 0 && !can) b.setEnabled(false);
       this.buttons.push(b);
       label(this, GAME_W / 2, y + 44, note, 14, { onDark: false, weight: 500, color: CSS.inkSoft }).setOrigin(0.5);
     });
     // "G" badge on the Google button
     const badge = this.add.graphics();
-    inkPanel(badge, GAME_W / 2 - 196, CARD.y + 160 - 20, 40, 40, { fill: C.white, radius: 20, shadow: 0, stroke: 3 });
-    display(this, GAME_W / 2 - 176, CARD.y + 159, 'G', 24, { shadow: null, color: '#4285f4', stroke: CSS.white }).setOrigin(0.5);
+    inkPanel(badge, GAME_W / 2 - 216, CARD.y + 160 - 20, 40, 40, { fill: C.white, radius: 20, shadow: 0, stroke: 3 });
+    display(this, GAME_W / 2 - 196, CARD.y + 159, 'G', 24, { shadow: null, color: '#4285f4', stroke: CSS.white }).setOrigin(0.5);
     badge.setAlpha(can ? 1 : 0.5);
 
     this.status = label(this, GAME_W / 2, CARD.y + CARD.h + 30, '', 16, { color: '#ff8a80' }).setOrigin(0.5);

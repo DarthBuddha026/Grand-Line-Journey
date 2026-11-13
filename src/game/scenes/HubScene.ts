@@ -26,6 +26,10 @@ const SHIP_PARALLAX = 0.72;
 const SCALE = 4.6 / CHAR_TEX; // character display scale on the dock
 const SPEED = 260;
 const TALK_RANGE = 85;
+/** Crew strolling on the dock: walk speed (units/s) and how long they stand between strolls (s). */
+const WALK_SPEED = 40;
+const REST_MIN = 4;
+const REST_MAX = 10;
 
 interface Mate {
   def: CharacterDef;
@@ -37,8 +41,10 @@ interface Mate {
   /** Feet line (the dock). */
   y: number;
   facing: 1 | -1;
-  phase: number;
   line: number;
+  /** Where they are strolling to, and the scene time (s) when they set off again after reaching it. */
+  target: number;
+  restUntil: number;
 }
 
 /**
@@ -134,7 +140,7 @@ export class HubScene extends Phaser.Scene {
   private makeMate(def: CharacterDef, x: number, y: number, i: number): Mate {
     const shadow = this.add.image(x, y + 2, 'shadow').setScale(3.4 / TEX).setAlpha(0.45);
     const sprite = this.add.image(x, y, `player_${def.id}`).setOrigin(0.5, 0.99).setScale(SCALE);
-    const m: Mate = { def, sprite, shadow, frames: characterFrames(this, def.id), home: x, x, y, facing: i % 2 ? -1 : 1, phase: i * 1.7, line: Math.floor(Math.random() * def.lines.length) };
+    const m: Mate = { def, sprite, shadow, frames: characterFrames(this, def.id), home: x, x, y, facing: i % 2 ? -1 : 1, line: Math.floor(Math.random() * def.lines.length), target: x, restUntil: this.time.now / 1000 + 1 + Math.random() * 5 };
     if (i >= 0) {
       sprite.setInteractive({ useHandCursor: true }).on('pointerdown', () => {
         if (Math.abs(this.player.x - m.x) <= TALK_RANGE) this.talkTo(m);
@@ -321,12 +327,19 @@ export class HubScene extends Phaser.Scene {
       const m = this.crew[i];
       const d = Math.abs(m.x - p.x);
       const close = d < 170 || m === this.speaker;
-      const target = close ? m.x : Phaser.Math.Clamp(m.home + Math.sin(t * 0.32 + m.phase) * 46, DECK_L, DECK_R);
-      const step = Phaser.Math.Clamp(target - m.x, -40 * dt, 40 * dt);
+      // Mostly stand around; now and then stroll a few steps from their spot, then rest again.
+      if (!close && m.target === m.x && t >= m.restUntil) {
+        m.target = Phaser.Math.Clamp(m.home + Phaser.Math.Between(-60, 60), DECK_L, DECK_R);
+      }
+      const step = close ? 0 : Phaser.Math.Clamp(m.target - m.x, -WALK_SPEED * dt, WALK_SPEED * dt);
       m.x += step;
+      if (step !== 0 && Math.abs(m.target - m.x) < 0.5) {
+        m.x = m.target; // arrived: rest a while
+        m.restUntil = t + REST_MIN + Math.random() * (REST_MAX - REST_MIN);
+      }
       if (close) m.facing = p.x < m.x ? -1 : 1;
       else if (Math.abs(step) > 0.01) m.facing = step < 0 ? -1 : 1;
-      this.pose(m, !close && Math.abs(step) > 0.2 * dt, t, i + 1);
+      this.pose(m, Math.abs(step) > 0, t, i + 1);
       if (d < best) {
         best = d;
         near = m;

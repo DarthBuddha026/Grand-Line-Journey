@@ -87,11 +87,11 @@ export class ProfileScene extends Phaser.Scene {
     t.setPosition(cx, by + 16).setOrigin(0.5).setDepth(1);
     const note = google
       ? `${acc?.email ?? ''}\nProgress is saved to the cloud.`
-      : 'Guest progress is erased when you close the browser.\nSign in to keep it.';
+      : 'Guest progress is erased when you close the browser.\nLog in to keep it.';
     label(this, cx, by + 46, note, 15, { onDark: false, weight: 500, color: google ? CSS.inkSoft : '#b3261e', style: { align: 'center', wordWrap: { width: w - 50 } } }).setOrigin(0.5, 0);
 
     // Actions
-    const primary: [string, () => void, 'gold' | 'red'] = google ? ['Sign out', () => this.doSignOut(), 'red'] : ['Sign in with Google', () => this.doSignIn(), 'gold'];
+    const primary: [string, () => void, 'gold' | 'red'] = google ? ['Sign out', () => this.doSignOut(), 'red'] : ['Log in or Create an Account', () => this.doSignIn(), 'gold'];
     const b1 = new Button(this, cx, y + h - 112, 320, 54, primary[0], primary[1], primary[2]);
     if (!google && !googleConfigured()) b1.setEnabled(false);
     const b2 = new Button(this, cx, y + h - 48, 320, 54, 'Back', () => this.close(), 'sea');

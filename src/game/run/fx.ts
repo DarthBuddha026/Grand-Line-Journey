@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { Pool, type Poolable } from '../../core/pool';
-import { CAPS, DEPTH, RES } from '../../config';
+import { CAPS, DEPTH, RES, WORLD_ZOOM } from '../../config';
 
 interface DamageNumber extends Poolable {
   life: number;
@@ -38,7 +38,7 @@ export class FxSystem {
           color: '#ffffff',
           stroke: '#1d1410',
           strokeThickness: 2.5,
-          resolution: Math.min(6, 2 * RES),
+          resolution: Math.min(8, WORLD_ZOOM * RES),
         })
         .setOrigin(0.5, 1)
         .setDepth(DEPTH.damage)

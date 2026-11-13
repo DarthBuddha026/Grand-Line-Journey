@@ -27,7 +27,7 @@ export const TEXT_RES = Math.min(4, RES * 1.25);
 
 export const GAME_W = 1280;
 export const GAME_H = 720;
-export const WORLD_ZOOM = 2;
+export const WORLD_ZOOM = 3; // world → design units; 3 shows about 427×240 of the world at 16:9
 export const VIEW_W = GAME_W / WORLD_ZOOM;
 export const VIEW_H = GAME_H / WORLD_ZOOM;
 

@@ -26,6 +26,9 @@ import { createWeapon, updateWeapon, type WeaponRuntime } from '../run/weapons';
 import { ANIM_FPS, CHAR_TEX, characterFrames, TEX, type CharacterAnim } from '../textures';
 import { itemIcon, skillIcon, weaponIcon } from '../icons';
 
+/** How big the captain is drawn in a run (visual only: the hitbox is unchanged). */
+const PLAYER_DRAW_SCALE = 1.5;
+
 export interface ChoiceInfo {
   name: string;
   desc: string;
@@ -573,10 +576,10 @@ export class RunScene extends Phaser.Scene implements RunContext {
     p.sprite
       .setPosition(p.x, p.y)
       .setFlipX(p.facing < 0)
-      .setScale(p.scale / CHAR_TEX)
+      .setScale((p.scale * PLAYER_DRAW_SCALE) / CHAR_TEX)
       .setAlpha(blink ? 0.4 : p.sleepT > 0 ? 0.7 : 1)
       .setAngle(p.sleepT > 0 ? 80 : 0);
-    p.shadow.setPosition(p.x, p.y + 2).setScale(p.scale / TEX);
+    p.shadow.setPosition(p.x, p.y + 2).setScale((p.scale * PLAYER_DRAW_SCALE) / TEX);
     if (invuln) p.sprite.setTint(this.runTime % 0.3 < 0.15 ? 0xffffff : 0xfff2b0);
     else p.sprite.clearTint();
 
