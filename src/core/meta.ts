@@ -1,4 +1,4 @@
-import { ACHIEVEMENTS, ALLIANCES, CHARACTERS, HAKI, LIMITS, SHOP, STAGES, type AchievementDef, type ShopUpgradeDef } from '../data';
+import { ACHIEVEMENTS, ALLIANCES, CHARACTERS, CREWS, HAKI, LIMITS, SHOP, STAGES, type AchievementDef, type ShopUpgradeDef } from '../data';
 import type { RunModPatch, StatModifier } from './stats';
 import type { HakiSlot, SaveData } from './save';
 import { computeBounty, type RunSummary } from './progression';
@@ -39,21 +39,52 @@ export function metaCounts(save: SaveData): { rerolls: number; holds: number; el
 
 // ---- Recruitment -------------------------------------------------------------------
 
+/** Testing override (?unlockall): treat every character as unlocked without touching the save. */
+let unlockAll = false;
+export function setUnlockAll(on: boolean): void {
+  unlockAll = on;
+}
+
 export function isUnlocked(save: SaveData, characterId: string): boolean {
   const c = CHARACTERS.get(characterId);
   if (!c) return false;
-  if (c.unlock.type === 'default') return true;
-  if (c.unlock.type === 'berries') return save.recruited.includes(characterId);
+  if (unlockAll || c.unlock.type === 'default') return true;
+  if (c.unlock.type === 'gacha') return save.recruited.includes(characterId);
   return save.achievements.includes(c.unlock.id) || save.recruited.includes(characterId);
 }
 
-export function recruit(save: SaveData, characterId: string): boolean {
-  const c = CHARACTERS.get(characterId);
-  if (!c || c.unlock.type !== 'berries' || isUnlocked(save, characterId)) return false;
-  if (save.berries < c.unlock.cost) return false;
-  save.berries -= c.unlock.cost;
-  save.recruited.push(characterId);
-  return true;
+/** Bounty-rank XP a duplicate pull gives the pulled character (HoloCure-style dupes). */
+export const DUPE_XP = 750;
+
+/** Characters a crew's gacha can give, equal odds. Achievement unlocks are never pulled. */
+export function gachaPool(crewId: string): string[] {
+  return [...CHARACTERS.values()].filter((c) => c.crew === crewId && c.unlock.type !== 'achievement').map((c) => c.id);
+}
+
+export interface PullResult {
+  id: string;
+  isNew: boolean;
+}
+
+/**
+ * Pull a crew's gacha `times` times (1 or 10) for `pullCost` each. New members join
+ * the crew; duplicates give DUPE_XP towards that character's bounty rank.
+ * Returns null (and changes nothing) if the crew is unknown or Berries are short.
+ */
+export function pullCrew(save: SaveData, crewId: string, times: number, rng: Rng): PullResult[] | null {
+  const crew = CREWS.find((c) => c.id === crewId);
+  const pool = gachaPool(crewId);
+  if (!crew || !pool.length || save.berries < crew.pullCost * times) return null;
+  save.berries -= crew.pullCost * times;
+  const out: PullResult[] = [];
+  for (let i = 0; i < times; i++) {
+    const id = pool[Math.floor(rng.next() * pool.length)];
+    const isNew = !isUnlocked(save, id);
+    if (isNew) save.recruited.push(id);
+    else save.charXp[id] = (save.charXp[id] ?? 0) + DUPE_XP;
+    out.push({ id, isNew });
+  }
+  return out;
 }
 
 /** A stage is open once the previous stage (by order) has been cleared by anyone. */

@@ -28,6 +28,8 @@ export const LIMITS = {
   itemMaxLevel: 5,
   skillMaxLevel: 3,
   levelUpChoices: 4,
+  /** Level-up cards for the character's own main attack + skills: 1 guaranteed, at most this many. */
+  kitChoicesMax: 2,
   hakiMaxLevel: 3,
   maxEnhance: 3,
 } as const;
@@ -178,9 +180,13 @@ export const STAGES = byId(
 export const BASE_WEAPON_IDS = [...WEAPONS.values()].filter((w) => !w.recipe).map((w) => w.id);
 export const ALLIANCES = [...WEAPONS.values()].filter((w) => w.recipe);
 
-export const CREWS: { id: string; name: string }[] = [
-  { id: 'straw_hat', name: 'Straw Hat Pirates' },
-  { id: 'world_government', name: 'World Government' },
+/**
+ * Each crew is a gacha banner: one pull costs `pullCost` Berries and gives a random gacha
+ * member. `tag` and `color` style the banner card in the Recruitment screen.
+ */
+export const CREWS: { id: string; name: string; tag: string; color: string; pullCost: number }[] = [
+  { id: 'straw_hat', name: 'Straw Hat Pirates', tag: 'PIRATES', color: '#e0303a', pullCost: 500 },
+  { id: 'world_government', name: 'World Government', tag: 'JUSTICE', color: '#1b6fa8', pullCost: 1500 },
 ];
 
 const ACTION_TYPES: ActionType[] = [
@@ -207,6 +213,7 @@ export function validateContent(): string[] {
     for (const s of c.skills) if (!SKILLS.has(s)) problems.push(`${c.id}: unknown skill ${s}`);
     checkAction(c.special.action, `${c.id}.special`, problems);
     if (c.unlock.type === 'achievement' && !ACHIEVEMENTS.has(c.unlock.id)) problems.push(`${c.id}: unknown unlock achievement ${c.unlock.id}`);
+    if (!Array.isArray(c.lines) || !c.lines.length || c.lines.some((l) => typeof l !== 'string' || !l.trim())) problems.push(`${c.id}: needs at least one ship line (lines)`);
   }
   for (const w of MAIN_ATTACKS.values()) w.levels.forEach((l, i) => checkAction(l.action, `${w.id}[${i + 1}]`, problems));
   for (const w of WEAPONS.values()) {

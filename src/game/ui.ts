@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
-import { TEXT_RES } from '../config';
+import { GAME_W, TEXT_RES } from '../config';
+import type { ScreenBox } from './layout';
+import { TEX } from './textures';
 
 /**
  * UI kit: "manga ink on pirate materials".
@@ -392,6 +394,22 @@ export class Button extends Phaser.GameObjects.Container {
       this.badgeText.setVisible(false);
     }
   }
+}
+
+/**
+ * Full-screen menu chrome (Recruit, Shipwright): ink top bar with the screen title and a
+ * Berries counter, ink bottom bar with control hints. Returns the Berries text to update.
+ */
+export function screenChrome(scene: Phaser.Scene, box: ScreenBox, title: string, hints: [string, string][]): Phaser.GameObjects.Text {
+  const bars = scene.add.graphics();
+  bars.fillStyle(C.ink, 0.88).fillRect(box.left, box.top, box.w, 72 - box.top);
+  bars.fillStyle(C.ink, 0.88).fillRect(box.left, 664, box.w, box.bottom - 664);
+  display(scene, Math.max(box.left + 40, 40), 36, title, 38, { shadow: null }).setOrigin(0, 0.5);
+  inkPanel(bars, 920, 14, 320, 46, { fill: C.seaDeep, skew: 14, shadow: 5 });
+  medallion(bars, 930, 37, 18, C.gold);
+  scene.add.image(930, 37, 'ic_coin').setScale(0.7 / TEX);
+  hintRow(scene, GAME_W / 2, 692, hints, CSS.white);
+  return display(scene, 1216, 37, '', 24, { shadow: null, color: CSS.gold }).setOrigin(1, 0.5);
 }
 
 /** Dark sea backdrop with diagonal stripes, for menus and overlays. */

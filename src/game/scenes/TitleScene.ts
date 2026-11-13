@@ -1,21 +1,45 @@
 import Phaser from 'phaser';
 import { CHARACTERS } from '../../data';
 import { GAME_W } from '../../config';
-import { loadSave } from '../../core/save';
-import { isUnlocked } from '../../core/meta';
-import { Button, C, CSS, display, gradientFill, label, medallion, ribbon, speedLines } from '../ui';
+import { loadSave, writeSave, type SaveData } from '../../core/save';
+import { isStageOpen, isUnlocked } from '../../core/meta';
+import { C, display, gradientFill, label, medallion, speedLines } from '../ui';
 import { centerCamera, relayoutOnResize, type ScreenBox } from '../layout';
 import { CHAR_TEX, TEX } from '../textures';
+import { boardMenu, logMenu, type MenuHost } from '../menus';
+import { account } from '../account';
+import { drawCelSea } from '../sea';
+import type { PanelConfig } from './PanelScene';
 
 const HORIZON = 455;
 const DECK_H = 164;
+
+interface MenuEntry {
+  name: string;
+  /** menu_* artwork key (src/assets/menu, loaded in BootScene). */
+  icon: string;
+  act: () => void;
+}
+interface MenuButton {
+  c: Phaser.GameObjects.Container;
+  act: () => void;
+  name: Phaser.GameObjects.Text;
+}
 
 /**
  * Title: a bright Grand Line morning. Sunburst behind the logo, drifting clouds, the
  * unlocked crew lined up on deck. The logo slams in once; the first click also
  * unlocks audio (browser rule). Sky, sea and deck bleed to every screen edge.
  */
-export class TitleScene extends Phaser.Scene {
+export class TitleScene extends Phaser.Scene implements MenuHost {
+  save!: SaveData;
+  private menu: MenuButton[] = [];
+  private focus = -1;
+  private panelClosedAt = 0;
+  private berriesText!: Phaser.GameObjects.Text;
+  private farewell: Phaser.GameObjects.Container | null = null;
+  private farewellAt = 0;
+  private padPrev = { l: true, r: true, a: true };
   private sky!: Phaser.GameObjects.Graphics;
   private sea!: Phaser.GameObjects.Graphics;
   private clouds: { g: Phaser.GameObjects.Graphics; speed: number }[] = [];
@@ -30,9 +54,15 @@ export class TitleScene extends Phaser.Scene {
   create(): void {
     this.started = false;
     this.clouds = [];
+    this.menu = [];
+    this.farewell = null;
+    this.panelClosedAt = 0;
+    this.padPrev = { l: true, r: true, a: true };
     const box = (this.box = centerCamera(this));
     relayoutOnResize(this);
-    const save = loadSave();
+    const save = (this.save = loadSave());
+    if (!isUnlocked(save, save.selectedCharacter)) save.selectedCharacter = 'luffy';
+    if (!isStageOpen(save, save.selectedStage)) save.selectedStage = 'shells_town';
     this.deckTop = Math.max(HORIZON + 90, box.bottom - DECK_H);
 
     // Sky
@@ -72,46 +102,154 @@ export class TitleScene extends Phaser.Scene {
     });
 
     // Logo (composed in the centre design area)
-    const logo = this.add.container(GAME_W / 2, 170);
-    const title = gradientFill(display(this, 0, 0, 'GRAND LINE', 108, { shadow: CSS.red }).setOrigin(0.5), '#fff3a8', '#ffb300');
-    const rib = this.add.graphics();
-    ribbon(rib, -190, 62, 380, 64, C.red);
-    const sub = display(this, 0, 94, 'SURVIVOR', 46, { shadow: null }).setOrigin(0.5);
-    logo.add([title, rib, sub]).setRotation(-0.045);
-    label(this, GAME_W / 2, 338, 'A survivor roguelite across the Grand Line', 20).setOrigin(0.5);
+    // A container, so the slam-in tween can scale it from 1 regardless of the image's own scale.
+    const logo = this.add.container(GAME_W / 2, 178);
+    const art = this.add.image(0, 0, 'menu_logo');
+    logo.add(art.setScale(660 / art.width));
+    label(this, GAME_W / 2, 326, 'The ONE PIECE is REAL!', 20).setOrigin(0.5);
 
-    const start = new Button(this, GAME_W / 2, 420, 320, 66, 'Set sail!', () => this.start(), 'gold');
-    this.tweens.add({ targets: start, scale: 1.05, duration: 650, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    // Main menu: one row of icon buttons
+    const entries: MenuEntry[] = [
+      { name: 'Profile', icon: 'menu_profile', act: () => this.openScene('profile') },
+      { name: 'Achievements', icon: 'menu_achievements', act: () => this.openPanel(boardMenu(this)) },
+      { name: 'Shop', icon: 'menu_shop', act: () => this.openScene('shopfront') },
+      { name: 'Set Sail', icon: 'menu_set-sail', act: () => this.start('sail') },
+      { name: 'Pirate Ship', icon: 'menu_pirate-crew', act: () => this.start() },
+      { name: 'Settings', icon: 'menu_settings', act: () => this.openPanel(logMenu(this)) },
+      { name: 'Quit', icon: 'menu_quit', act: () => this.quit() },
+    ];
+    this.menu = entries.map((e, i) => this.menuButton(GAME_W / 2 + (i - (entries.length - 1) / 2) * 172, 418, e, i));
+    this.setFocus(-1);
 
     // Corner info, pinned to the real screen edges
     const pill = this.add.graphics();
     const px = box.left + 20;
     const py = box.top + 20;
-    pill.fillStyle(C.ink, 0.9).fillRoundedRect(px + 4, py + 4, 230, 44, 22);
-    pill.fillStyle(C.seaDeep, 0.85).fillRoundedRect(px, py, 230, 44, 22);
-    pill.lineStyle(3, C.ink).strokeRoundedRect(px, py, 230, 44, 22);
+    pill.fillStyle(C.ink, 0.9).fillRoundedRect(px + 4, py + 4, 268, 44, 22);
+    pill.fillStyle(C.seaDeep, 0.85).fillRoundedRect(px, py, 268, 44, 22);
+    pill.lineStyle(3, C.ink).strokeRoundedRect(px, py, 268, 44, 22);
     medallion(pill, px + 24, py + 22, 14, C.gold);
-    this.add.image(px + 24, py + 22, 'ic_coin').setScale(0.42 / TEX);
-    label(this, px + 48, py + 22, `${save.berries.toLocaleString('en-US')} Berries`, 17).setOrigin(0, 0.5);
-    label(this, box.right - 24, box.top + 30, `Crew ${crew.length} / ${CHARACTERS.size}   ·   Voyages ${save.runs}`, 15).setOrigin(1, 0);
+    this.add.image(px + 24, py + 22, 'ic_coin').setScale(0.6 / TEX);
+    this.berriesText = label(this, px + 48, py + 22, `${save.berries.toLocaleString('en-US')} Berries`, 17).setOrigin(0, 0.5);
+    label(this, box.right - 24, box.top + 30, `Playing as ${account()?.name ?? 'Guest Captain'}`, 15).setOrigin(1, 0);
     label(this, GAME_W / 2, box.bottom - 16, 'Unofficial, non-commercial fan project. One Piece © Eiichiro Oda / Shueisha / Toei Animation.', 11, { weight: 500, color: '#f3e2b8' }).setOrigin(0.5);
 
     logo.setScale(1.9).setAlpha(0);
     this.tweens.add({ targets: logo, scale: 1, alpha: 1, duration: 520, ease: 'Back.Out', onComplete: () => this.cameras.main.shake(160, 0.004) });
 
-    this.input.keyboard!.once('keydown-ENTER', () => this.start());
-    this.input.keyboard!.once('keydown-SPACE', () => this.start());
-    this.input.gamepad?.once('down', () => this.start());
-    this.input.once('pointerdown', (_p: Phaser.Input.Pointer, over: unknown[]) => {
-      if (!over.length) this.start();
+    this.input.keyboard!.on('keydown', (ev: KeyboardEvent) => {
+      if (this.busy()) return;
+      if (this.farewell) return this.closeFarewell();
+      if (ev.code === 'ArrowLeft' || ev.code === 'KeyA') this.step(-1);
+      else if (ev.code === 'ArrowRight' || ev.code === 'KeyD') this.step(1);
+      else if (ev.code === 'Enter' || ev.code === 'Space' || ev.code === 'KeyE') this.activate();
     });
   }
 
-  private start(): void {
+  // ---- Main menu ----------------------------------------------------------------------
+
+  private menuButton(x: number, y: number, e: MenuEntry, i: number): MenuButton {
+    const c = this.add.container(x, y);
+    const icon = this.add.image(0, 0, e.icon).setDisplaySize(96, 96);
+    // Name shows only on hover/focus: bold display type with an ink outline, no plate.
+    const name = display(this, 0, 72, e.name, 30).setOrigin(0.5).setVisible(false);
+    const zone = this.add.zone(0, 0, 100, 100).setInteractive({ useHandCursor: true });
+    zone.on('pointerover', () => !this.busy() && this.setFocus(i));
+    zone.on('pointerout', () => this.focus === i && this.setFocus(-1));
+    zone.on('pointerdown', () => !this.busy() && !this.farewell && e.act());
+    c.add([icon, name, zone]);
+    return { c, name, act: e.act };
+  }
+
+  /** Highlight button i, or none with -1 (mouse left the row). Keys wrap around. */
+  private setFocus(i: number): void {
+    this.focus = i < 0 ? -1 : (i + this.menu.length) % this.menu.length;
+    this.menu.forEach((b, k) => {
+      const on = k === this.focus;
+      b.name.setVisible(on);
+      this.tweens.killTweensOf(b.c);
+      this.tweens.add({ targets: b.c, scale: on ? 1.12 : 1, duration: 120, ease: 'Back.Out' });
+    });
+  }
+
+  /** Keys/pad: with nothing highlighted, the first press lands on Set Sail. */
+  private step(d: number): void {
+    this.setFocus(this.focus < 0 ? 3 : this.focus + d);
+  }
+
+  private activate(): void {
+    if (this.focus < 0) this.setFocus(3);
+    else this.menu[this.focus].act();
+  }
+
+  /** A panel, a run start or a just-closed panel's Esc should not reach the menu. */
+  private busy(): boolean {
+    return this.started || this.overlayOpen() || this.time.now - this.panelClosedAt < 250;
+  }
+
+  private overlayOpen(): boolean {
+    return ['panel', 'profile', 'shopfront', 'gacha', 'shop'].some((k) => this.scene.isActive(k));
+  }
+
+  /** A dedicated menu scene (the Shop front desk) launched over the title with this as its host. */
+  private openScene(key: string): void {
+    if (this.overlayOpen()) return;
+    this.scene.launch(key, { host: this, onClose: () => (this.panelClosedAt = this.time.now) });
+  }
+
+  private openPanel(cfg: PanelConfig): void {
+    if (this.overlayOpen()) return;
+    this.scene.launch('panel', { ...cfg, onClose: () => (this.panelClosedAt = this.time.now) });
+  }
+
+  private start(to: 'hub' | 'sail' = 'hub'): void {
     if (this.started) return;
     this.started = true;
     this.cameras.main.fadeOut(300, 8, 37, 65);
-    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => this.scene.start('hub'));
+    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => this.scene.start(to));
+  }
+
+  /** Browsers only let a page close itself if a script opened it; otherwise say goodbye. */
+  private quit(): void {
+    window.close();
+    const b = this.box;
+    const g = this.add.graphics();
+    g.fillStyle(C.ink, 0.9).fillRect(b.left, b.top, b.w, b.h);
+    const title = display(this, GAME_W / 2, 300, 'Fair winds, Captain!', 64).setOrigin(0.5);
+    gradientFill(title, '#fff3a8', '#ffb300');
+    const msg = label(this, GAME_W / 2, 390, 'Your progress is saved. Close this tab to quit, or press any key to return.', 18).setOrigin(0.5);
+    const zone = this.add.zone(b.left, b.top, b.w, b.h).setOrigin(0).setInteractive();
+    zone.on('pointerdown', () => this.closeFarewell());
+    this.farewell = this.add.container(0, 0, [g, title, msg, zone]).setDepth(1000);
+    this.farewellAt = this.time.now;
+  }
+
+  private closeFarewell(): void {
+    if (!this.farewell || this.time.now - this.farewellAt < 250) return;
+    this.farewell.destroy(true);
+    this.farewell = null;
+  }
+
+  // ---- MenuHost (panels opened from the title) ----
+
+  persist(): void {
+    writeSave(this.save);
+    this.berriesText.setText(`${this.save.berries.toLocaleString('en-US')} Berries`);
+  }
+
+  reload(save: SaveData): void {
+    writeSave(save);
+    this.scene.stop('panel');
+    this.scene.restart();
+  }
+
+  startRun(): void {
+    this.scene.stop('panel');
+    this.started = true;
+    this.cameras.main.fadeOut(250, 8, 37, 65);
+    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () =>
+      this.scene.start('run', { characterId: this.save.selectedCharacter, stageId: this.save.selectedStage }),
+    );
   }
 
   private cloud(x: number, y: number, s: number): Phaser.GameObjects.Graphics {
@@ -127,6 +265,19 @@ export class TitleScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number): void {
+    const pad = this.input.gamepad?.total ? this.input.gamepad.pad1 : undefined;
+    if (pad) {
+      const now = { l: pad.left || pad.leftStick.x < -0.5, r: pad.right || pad.leftStick.x > 0.5, a: pad.A };
+      if (!this.busy()) {
+        if (this.farewell && now.a && !this.padPrev.a) this.closeFarewell();
+        else if (!this.farewell) {
+          if (now.l && !this.padPrev.l) this.step(-1);
+          if (now.r && !this.padPrev.r) this.step(1);
+          if (now.a && !this.padPrev.a) this.activate();
+        }
+      }
+      this.padPrev = now;
+    }
     const t = time / 1000;
     const box = this.box;
     const sky = this.sky;
@@ -140,21 +291,6 @@ export class TitleScene extends Phaser.Scene {
       if (c.g.x > box.right + 120) c.g.x = box.left - 160;
     }
 
-    const sea = this.sea;
-    sea.clear();
-    const seaH = this.deckTop - HORIZON;
-    sea.fillGradientStyle(0x1b8fd0, 0x1b8fd0, 0x0f3b63, 0x0f3b63, 1).fillRect(box.left, HORIZON, box.w, seaH);
-    sea.fillStyle(0xffffff, 0.75).fillRect(box.left, HORIZON, box.w, 3);
-    const rows = Math.max(3, Math.floor((seaH - 20) / 30));
-    for (let row = 0; row < rows; row++) {
-      const y = HORIZON + 22 + row * 30;
-      sea.lineStyle(3 + Math.min(row, 4), 0xe6f7ff, Math.min(0.75, 0.35 + row * 0.1));
-      for (let x = box.left - 80; x < box.right + 80; x += 140) {
-        const ox = x + ((t * (18 + row * 8)) % 140) + (row % 2) * 70;
-        sea.beginPath();
-        sea.arc(ox, y + Math.sin(t * 2 + x) * 2, 26 + Math.min(row, 4) * 4, Math.PI * 1.15, Math.PI * 1.85, false);
-        sea.strokePath();
-      }
-    }
+    drawCelSea(this.sea, box.left, box.w, HORIZON, this.deckTop + 50 - HORIZON, t); // runs under the deck rail so no gap shows
   }
 }

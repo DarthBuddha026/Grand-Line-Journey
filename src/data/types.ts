@@ -144,7 +144,10 @@ export interface CharacterDef {
   mainAttack: string;
   special: { id: string; name: string; desc: string; cooldown: number; action: ActionDef };
   skills: string[]; // exactly 3
-  unlock: { type: 'default' } | { type: 'berries'; cost: number } | { type: 'achievement'; id: string };
+  /** Things they say when you talk to them on the ship (original lines, 3-4 each). */
+  lines: string[];
+  /** gacha: pulled from the crew's gacha in Crew Quarters (CREWS.pullCost). */
+  unlock: { type: 'default' } | { type: 'gacha' } | { type: 'achievement'; id: string };
   look: { body: string; hair: string; skin?: string; pants?: string; hat?: string; tall?: boolean };
 }
 

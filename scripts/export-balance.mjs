@@ -35,7 +35,7 @@ try {
   write('characters', [...d.CHARACTERS.values()].map((c) => ({
     id: c.id, name: c.name, crew: c.crew, devilFruit: c.devilFruit, hp: c.baseStats.hp, atk: c.baseStats.atk, spd: c.baseStats.spd,
     crit: c.baseStats.crit, mainAttack: c.mainAttack, special: c.special.name, specialCooldown: c.special.cooldown,
-    specialAction: c.special.action.type, skills: c.skills.join(' / '), unlock: c.unlock.type === 'berries' ? `฿${c.unlock.cost}` : c.unlock.type === 'achievement' ? c.unlock.id : 'default',
+    specialAction: c.special.action.type, skills: c.skills.join(' / '), unlock: c.unlock.type === 'achievement' ? c.unlock.id : c.unlock.type,
   })));
 
   const weaponRows = (list, kind) => list.flatMap((w) => w.levels.map((l, i) => ({ kind, id: w.id, name: w.name, level: i + 1, cooldown: l.cooldown, desc: l.desc, ...flatAction(l.action) })));

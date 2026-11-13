@@ -14,7 +14,7 @@ Grand Line Survivor (formerly Grand Line Journey; the repo folder and the design
 - the Thousand Sunny hub
 - a balance-spreadsheet export
 
-Not done: closed playtests (a human task), audio (no assets yet), real art (characters, enemies and icons are generated HD vector placeholders), and optional extras like aquarium fishing, costumes, PWA and leaderboards. Phase 4 adds one crew + one stage per update using the same systems.
+Not done: closed playtests (a human task), audio (no assets yet), real art (characters, enemies and in-game icons are generated HD vector placeholders; only the main-menu title logo and buttons use supplied PNGs, in `src/assets/menu/`, loaded by `BootScene.preload` as `menu_<file name>`; a PNG in `src/assets/icons/<name>.png` (256×256) replaces the generated `ic_<name>` glyph, e.g. the Berries coin; `src/assets/art/*.png` load as `art_<name>`, e.g. the ship hub), and optional extras like aquarium fishing, costumes, PWA and leaderboards. Phase 4 adds one crew + one stage per update using the same systems.
 
 ## Commands
 
@@ -22,13 +22,19 @@ Not done: closed playtests (a human task), audio (no assets yet), real art (char
 npm run dev          # Vite dev server
 npm run build        # tsc --noEmit + vite build → dist/ (static; relative paths for itch.io)
 npm run typecheck
-npm test             # vitest: src/core logic + content validation
+npm run preview      # serve the built dist/
+npm test             # vitest (node env, src/**/*.test.ts): src/core logic + content validation
+npm run test:watch
 npx vitest run src/core/meta.test.ts         # single file
 npx vitest run -t "fuses two max-level"      # single test by name
 npm run balance      # export every tunable number to balance/*.csv (via Vite SSR, so levels are fully expanded)
 ```
 
-Dev URL flags (`src/config.ts` → `readUrlFlags`): `?debug` shows FPS/entity counts, `?seed=N` fixes the RNG, and `?time=S` starts runs at S seconds (e.g. `?time=595` jumps to the mid-boss). In the browser console, `game` is the Phaser.Game and `game.scene.getScene('run')` is the live run. Its private methods (`syncChoice`, `openAnvil`, `activateSpecial`) are callable for testing. A good smoke test:
+There is no linter or formatter; `typecheck` + `test` are the checks.
+
+Link previews: `index.html` has Open Graph / Twitter-card tags; `public/` holds `og-image.jpg` (1200×630, a title-screen capture), `favicon.png` and `apple-touch-icon.png`. Set `VITE_SITE_URL` (`.env`, trailing slash) to the hosted address before building, since social sites need an absolute image URL.
+
+Dev URL flags (`src/config.ts` → `readUrlFlags`): `?debug` shows FPS/entity counts, `?seed=N` fixes the RNG, `?time=S` starts runs at S seconds (e.g. `?time=595` jumps to the mid-boss), and `?unlockall` is test mode: every character unlocked (`setUnlockAll` in core/meta.ts) and 999,999,999 Berries, played on an in-memory copy of the save (`applyTestMode` in src/game/account.ts), so nothing done in it is saved or synced. In the browser console, `game` is the Phaser.Game and `game.scene.getScene('run')` is the live run. Its private methods (`syncChoice`, `openAnvil`, `activateSpecial`) are callable for testing. A good smoke test:
 
 1. Stop all scenes.
 2. Call `game.scene.start('run', {characterId, stageId})`.
@@ -92,11 +98,16 @@ The run states are `playing | levelup | chest | anvil | cleared | paused | ended
 **Pooled-object gotcha:** enemies, hitboxes and pickups are recycled from fixed pools (`CAPS` in config.ts). An object can be released and re-acquired as something else within the same frame, so anything that holds a reference across frames must check identity, not just `alive`. `BossSystem` stores the def for this reason. `Pool.release` swap-removes, so iterate `pool.active` backwards when releasing. Never allocate game objects mid-run.
 
 **Scenes:**
-- `boot` validates data and generates placeholder textures.
-- `title` is the click-to-start screen and the audio-unlock gesture.
-- `hub` is the walkable Thousand Sunny; its stations open `panel`, a generic list+detail menu. Configs live in `src/game/menus.ts`.
+- `boot` validates data, generates placeholder textures, then `restoreAccount()` → `title`, or `account` (first launch: Sign in with Google / Play as guest).
+- `profile` (main menu → Profile): account card (sign in / sign out) + lifetime stats.
+- `title` is the main menu: a row of icon buttons (Profile, Achievements, Shop, Set Sail, Pirate Ship → `hub`, Settings, Quit). It implements `MenuHost`: Achievements and Settings open `panel` (a generic list+detail menu; configs in `src/game/menus.ts`), Profile and Shop launch their own scenes on top; its first click is also the audio-unlock gesture.
+- `hub` is the harbour: a code-drawn wooden dock in front (where you and the crew stand) with the Thousand Sunny (`art_ship`, src/assets/art/ship.png) moored behind as scenery at slower parallax: walk the dock (A/D) and press E by a recruited crewmate to hear one of their `lines` (characters.json). The deck scrolls with the player; the HUD is on a second fixed camera. Crew use `characterFrames` (textures.ts) for idle/run frames when they have hand-drawn art. The sea is `drawCelSea` (src/game/sea.ts), shared with the title.
+- `shopfront` is the main menu's Shop desk (Nakama / Shipwright / Back); it launches `gacha` or `shop` on top. Launched scenes draw in `main.ts` scene-list order, so sub-screens must come after the screen that opens them.
+- `shop` is the Shipwright (via `shopfront`): Abilities/Stats tabs (split on `meta` in shop.json), a tile grid with level pips and SOLD!, and a description box. `gacha` and `shop` share `screenChrome` from ui.ts.
+- `gacha` is the Nakama screen (via `shopfront`): one banner card per crew (`CREWS` in data/index.ts: `tag`, `color`, `pullCost`), with ×1/×10 pulls via `pullCrew` in core/meta.ts and a speed-line reveal.
+- `sail` is the main menu's Set Sail flow in one scene: captain grid (rows per crew) → Haki (three slot cards; only once the player owns a Haki, otherwise skipped both ways) → mode (`RunMode`: `stage`, `endless`; Time mode is a "coming soon" card) → stage, then `run` with `{ characterId, stageId, mode }`. Endless mode auto-continues past the stage clear (the clear still counts); `result` carries the mode into "Sail again".
 - `run` + `hud` run in parallel; the HUD reads RunScene state every frame and calls `choose`, `reroll`, `hold`, `eliminate`, `chooseAnvil`, `closeChest`, `continueEndless`, `retire`, `togglePause` and `quitRun`.
-- `result` shows the wanted poster and rewards; the save is already written by `RunScene.endRun` via `applyRun`.
+- `result` shows the wanted poster and rewards; the save is already written by `RunScene.endRun` via `applyRun`. Its Share button (S) snapshots the 1280×720 design area and calls `shareImage` (src/game/share.ts): the native share sheet with the PNG and a caption, else it downloads the PNG and copies the caption.
 
 Phaser reuses scene instances, so reset per-run fields in `init()`/`create()`, never in class field initializers. Use `update()` rather than `this.events.on(UPDATE)`.
 
@@ -122,3 +133,9 @@ Phaser reuses scene instances, so reset per-run fields in `init()`/`create()`, n
 **Rendering (HD):** layout is authored in 1280×720 design units, but the canvas renders at `RES`× (config.ts; picked at boot from the screen's physical pixels, about 1.5 at 1080p, 2 at 1440p and up to 3 at 4K; override with `?res=N`). Phaser 4 has no global resolution, so every camera zooms by RES: `centerCamera` (zoom RES), HUD (RES × uiZoom), world (`WORLD_ZOOM * RES`). Pointer coordinates are game pixels, so divide by RES for design units (see input.ts). Text rasterises at `TEXT_RES` (`label`/`display` set it; raw `add.text` calls must pass it too). `pixelArt` is off: all generated textures are supersampled, `TEX`× (4) for most and `CHAR_TEX`× (12) for the chibi characters, with linear filtering. Code that shows them with `setScale(n)` must use `n / TEX` or `n / CHAR_TEX`; `setDisplaySize` needs no change. The world view is 640×360 world units at 16:9.
 
 **Input** (`src/game/input.ts`) merges keyboard+mouse, gamepad and a touch joystick into one per-frame snapshot. Aim modes are mouse or auto (nearest enemy), toggled with C.
+
+**Accounts and saves** (`src/game/account.ts`): `loadSave`/`writeSave` with no store argument go to the store set by `useSaveStore` (`core/save.ts`).
+- **Guest:** `sessionStorage`, wiped when the browser closes. The choice is remembered for the session only.
+- **Google:** Firebase Auth + Firestore doc `saves/{uid}` = `{ save: <JSON string>, updatedAt }`. A cache in localStorage under `<save key>@<uid>` keeps loads synchronous. Writes push to the cloud about 1 s later and on tab hide. At sign-in `chooseSave` picks the newer of the cloud copy and the device cache, else carried-in progress: a guest's save when signing in from Profile, or the pre-accounts localStorage save for the first Google account on that browser.
+- **Config:** `VITE_FIREBASE_*` in `.env.local` (see `.env.example`). Without it the Google button is disabled and only guest play works. Firebase is code-split and only downloaded when configured. Security rules live in `firestore.rules`.
+- **Popups:** `signInWithGoogle` must be called straight from a click or key handler, so `prepareGoogle()` preloads Firebase when the sign-in screen or Profile opens.

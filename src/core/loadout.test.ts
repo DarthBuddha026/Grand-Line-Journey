@@ -13,6 +13,21 @@ describe('Loadout', () => {
     expect(new Set(choices.map((c) => `${c.kind}:${c.id}`)).size).toBe(4);
   });
 
+  it('offers 1 to kitChoicesMax character cards per level-up while other options exist', () => {
+    const l = new Loadout('main', pools.skills);
+    for (let seed = 0; seed < 200; seed++) {
+      const kit = l.rollChoices(pools, new Rng(seed), 4).filter((c) => c.kind === 'mainAttack' || c.kind === 'skill');
+      expect(kit.length).toBeGreaterThanOrEqual(1);
+      expect(kit.length).toBeLessThanOrEqual(LIMITS.kitChoicesMax);
+    }
+  });
+
+  it('lifts the character-card cap before falling back to boosts', () => {
+    const l = new Loadout('main', pools.skills);
+    const none = { weapons: [], items: [], skills: pools.skills };
+    expect(l.rollChoices(none, new Rng(1), 4).map((c) => c.kind).sort()).toEqual(['mainAttack', 'skill', 'skill', 'skill']);
+  });
+
   it('stops offering new weapons once all weapon slots are full', () => {
     const l = new Loadout('main', pools.skills);
     for (const id of ['w1', 'w2', 'w3', 'w4', 'w5']) l.apply({ kind: 'weapon', id, level: 1 });

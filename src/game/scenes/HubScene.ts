@@ -1,346 +1,406 @@
 import Phaser from 'phaser';
-import { CHARACTERS, STAGES } from '../../data';
-import { GAME_W } from '../../config';
+import { CHARACTERS, type CharacterDef } from '../../data';
+import { RES } from '../../config';
 import { centerCamera, relayoutOnResize, type ScreenBox } from '../layout';
-import { CHAR_TEX, TEX } from '../textures';
-import { loadSave, writeSave, type SaveData } from '../../core/save';
-import { isStageOpen, isUnlocked, rankFor } from '../../core/meta';
-import { burst, Button, C, CSS, display, hintRow, inkPanel, keycap, label, medallion, ribbon } from '../ui';
-import { boardMenu, crewMenu, hakiMenu, logMenu, shopMenu, stageMenu, type MenuHost } from '../menus';
-import type { PanelConfig } from './PanelScene';
-
-interface Station {
-  id: string;
-  name: string;
-  verb: string;
-  x: number;
-  y: number;
-  icon: string;
-  color: number;
-  menu: () => PanelConfig;
-  sign?: Phaser.GameObjects.Container;
-}
-
-const DECK = { x: 150, y: 140, w: 930, h: 450 };
-const SPEED = 230;
+import { ANIM_FPS, CHAR_TEX, characterFrames, TEX, type CharacterAnim } from '../textures';
+import { loadSave } from '../../core/save';
+import { isUnlocked, rankFor } from '../../core/meta';
+import { burst, Button, C, CSS, display, hintRow, inkPanel, keycap, label, medallion } from '../ui';
+import { drawCelSea } from '../sea';
 
 /**
- * The Thousand Sunny: a walkable hub instead of menus. Walk to a signboard and press
- * E (or click it) to open its logbook panel.
+ * Harbour layout in world units (design height 720; the dock scrolls sideways). Everyone
+ * stands on a wooden dock in the foreground; the Thousand Sunny (`art_ship`) is moored behind
+ * it as scenery only, with slower parallax so it reads as farther away.
  */
-export class HubScene extends Phaser.Scene implements MenuHost {
-  save!: SaveData;
-  private avatar!: Phaser.GameObjects.Image;
-  private avatarShadow!: Phaser.GameObjects.Image;
-  private bubble!: Phaser.GameObjects.Container;
-  private bubbleText!: Phaser.GameObjects.Text;
-  private sea!: Phaser.GameObjects.Graphics;
-  private plate!: Phaser.GameObjects.Container;
-  private stations: Station[] = [];
-  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
-  private near: Station | null = null;
-  private padPrevA = true;
-  private padPrevStart = true;
+const WORLD_W = 2600;
+const HORIZON = 300;
+const DECK_Y = 600; // feet line on the dock
+const DOCK_TOP = DECK_Y - 46; // back edge of the dock's walking surface
+const DOCK_FRONT = DECK_Y + 22; // front edge, where the fascia beam starts
+const WATERLINE = 668; // the near sea covers the piles below this
+const DECK_L = 150; // walkable dock
+const DECK_R = WORLD_W - 150;
+const SHIP_H = 560; // ship image display height
+const SHIP_PARALLAX = 0.72;
+const SCALE = 4.6 / CHAR_TEX; // character display scale on the dock
+const SPEED = 260;
+const TALK_RANGE = 85;
+
+interface Mate {
+  def: CharacterDef;
+  sprite: Phaser.GameObjects.Image;
+  shadow: Phaser.GameObjects.Image;
+  frames: Record<CharacterAnim, string[]>;
+  home: number;
+  x: number;
+  /** Feet line (the dock). */
+  y: number;
+  facing: 1 | -1;
+  phase: number;
+  line: number;
+}
+
+/**
+ * The harbour: walk the dock where the Thousand Sunny is moored and meet the crew you've
+ * recruited. Walk up to a crewmate and press E (or click them) to hear what they have to
+ * say. The dock scrolls with you; the HUD sits on a second, fixed camera (like HudScene).
+ */
+export class HubScene extends Phaser.Scene {
   private box!: ScreenBox;
-  private startAt: { ax: number; ay: number } | null = null;
+  private uiCam!: Phaser.Cameras.Scene2D.Camera;
+  private ui!: Phaser.GameObjects.Container;
+  private sky!: Phaser.GameObjects.Graphics;
+  private seaBack!: Phaser.GameObjects.Graphics;
+  private seaFront!: Phaser.GameObjects.Graphics;
+  private clouds!: Phaser.GameObjects.Graphics;
+  private ship!: Phaser.GameObjects.Image;
+  private shipY = 0;
+  private player!: Mate;
+  private crew: Mate[] = [];
+  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
+  private near: Mate | null = null;
+  private walkTo: Mate | null = null;
+  private prompt!: Phaser.GameObjects.Container;
+  private speech!: Phaser.GameObjects.Container;
+  private speechText!: Phaser.GameObjects.Text;
+  private speechG!: Phaser.GameObjects.Graphics;
+  private speaker: Mate | null = null;
+  private speechUntil = 0;
+  private padPrev = { a: true, b: true };
+  private startX = 640;
+  private leaving = false;
 
   constructor() {
     super('hub');
   }
 
-  init(data: { ax?: number; ay?: number }): void {
-    this.startAt = data?.ax !== undefined && data.ay !== undefined ? { ax: data.ax, ay: data.ay } : null;
+  init(data: { x?: number }): void {
+    this.startX = data?.x ?? 640;
+    this.crew = [];
+    this.near = this.walkTo = this.speaker = null;
+    this.speechUntil = 0;
+    this.leaving = false;
+    this.padPrev = { a: true, b: true };
   }
 
   create(): void {
-    this.box = centerCamera(this);
-    relayoutOnResize(this, () => ({ ax: this.avatar.x, ay: this.avatar.y }));
-    this.save = loadSave();
-    if (!isUnlocked(this.save, this.save.selectedCharacter)) this.save.selectedCharacter = 'luffy';
-    if (!isStageOpen(this.save, this.save.selectedStage)) this.save.selectedStage = 'shells_town';
-    this.near = null;
+    const box = (this.box = centerCamera(this));
+    relayoutOnResize(this, () => ({ x: this.player.x }));
+    const save = loadSave();
+    const captainId = isUnlocked(save, save.selectedCharacter) ? save.selectedCharacter : 'luffy';
     this.cameras.main.setBackgroundColor(C.sea).fadeIn(300, 8, 37, 65);
-    this.sea = this.add.graphics().setDepth(-10);
-    this.drawShip();
 
-    this.stations = [
-      { id: 'sail', name: 'Lion Figurehead', verb: 'Set sail', x: 1010, y: 365, icon: 'ic_compass', color: C.gold, menu: () => stageMenu(this) },
-      { id: 'crew', name: 'Crew Quarters', verb: 'Choose your captain', x: 330, y: 245, icon: 'ic_crown', color: C.seaMid, menu: () => crewMenu(this) },
-      { id: 'shop', name: 'Shipwright', verb: 'Buy upgrades', x: 330, y: 500, icon: 'ic_anvil', color: C.teal, menu: () => shopMenu(this) },
-      { id: 'haki', name: 'Haki Dojo', verb: 'Equip Haki', x: 640, y: 225, icon: 'ic_haki', color: C.violet, menu: () => hakiMenu(this) },
-      { id: 'board', name: 'Bounty Board', verb: 'Check records', x: 640, y: 520, icon: 'ic_poster', color: C.red, menu: () => boardMenu(this) },
-      { id: 'log', name: "Captain's Log", verb: 'Manage save', x: 205, y: 370, icon: 'ic_book', color: C.wood, menu: () => logMenu(this) },
-    ];
-    for (const s of this.stations) s.sign = this.makeSign(s);
+    // Screen-fixed backdrop (scroll factor 0, drawn in screen units)
+    this.sky = this.add.graphics().setScrollFactor(0);
+    this.sky.fillGradientStyle(0x2b8fd0, 0x2b8fd0, 0xaee9f7, 0xaee9f7, 1).fillRect(0, 0, box.w, HORIZON + box.oy);
+    this.clouds = this.add.graphics().setScrollFactor(0.2);
+    this.drawClouds();
+    this.seaBack = this.add.graphics().setScrollFactor(0);
+    this.ship = this.makeShip();
+    this.drawDock();
 
-    const ax = this.startAt?.ax ?? 760;
-    const ay = this.startAt?.ay ?? 370;
-    this.avatarShadow = this.add.image(ax, ay + 2, 'shadow').setScale(3.2 / TEX).setAlpha(0.7);
-    this.avatar = this.add.image(ax, ay, `player_${this.save.selectedCharacter}`).setScale(3.4 / CHAR_TEX).setOrigin(0.5, 0.9);
-    this.makeBubble();
-    this.plate = this.add.container(0, 0).setDepth(2000);
-    this.refreshHeader();
-
-    hintRow(this, GAME_W / 2, this.box.bottom - 30, [['WASD', 'Walk'], ['E', 'Use'], ['Esc', 'Main menu']], CSS.white).setDepth(2000);
-    new Button(this, this.box.left + 110, this.box.bottom - 34, 170, 46, 'Main menu', () => this.toTitle(), 'sea').setDepth(2000);
-
-    this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string, Phaser.Input.Keyboard.Key>;
-    this.input.keyboard!.on('keydown', (ev: KeyboardEvent) => {
-      if (this.scene.isActive('panel')) return;
-      if ((ev.code === 'KeyE' || ev.code === 'Enter' || ev.code === 'Space') && this.near) this.open(this.near);
-      // The Esc that closes a logbook must not also leave the ship.
-      else if (ev.code === 'Escape' && this.time.now - this.panelClosedAt > 250) this.toTitle();
-    });
-  }
-
-  private panelClosedAt = 0;
-  private leaving = false;
-
-  /** Back to the title screen (the main menu). */
-  toTitle(): void {
-    if (this.leaving || this.scene.isActive('panel')) return;
-    this.leaving = true;
-    this.cameras.main.fadeOut(250, 8, 37, 65);
-    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-      this.leaving = false;
-      this.scene.start('title');
-    });
-  }
-
-  // ---- Drawing --------------------------------------------------------------------------
-
-  private drawShip(): void {
-    const g = this.add.graphics().setDepth(-5);
-    const { x, y, w, h } = DECK;
-    // Hull with a hard ink shadow on the water
-    g.fillStyle(C.seaDeep, 0.7).fillRoundedRect(x - 10, y + 2, w + 40, h + 40, 90);
-    // Bow point toward the figurehead
-    const bow = [
-      { x: x + w - 60, y: y - 18 },
-      { x: x + w + 150, y: y + h / 2 },
-      { x: x + w - 60, y: y + h + 18 },
-    ];
-    g.fillStyle(C.ink).fillPoints(bow.map((p) => ({ x: p.x + 6, y: p.y + 6 })), true);
-    g.fillStyle(C.woodDark).fillPoints(bow, true);
-    g.lineStyle(4, C.ink).strokePoints(bow, true, true);
-    g.fillStyle(C.ink).fillRoundedRect(x - 24, y - 24, w + 48, h + 48, 80);
-    g.fillStyle(C.woodDark).fillRoundedRect(x - 20, y - 20, w + 40, h + 40, 78);
-    g.fillStyle(C.wood).fillRoundedRect(x - 12, y - 12, w + 24, h + 24, 70);
-    // Deck planks
-    g.fillStyle(C.woodLight).fillRoundedRect(x, y, w, h, 60);
-    g.lineStyle(2, C.wood, 0.75);
-    for (let py = y + 22; py < y + h - 10; py += 26) g.lineBetween(x + 24, py, x + w - 24, py);
-    g.lineStyle(2, C.wood, 0.35);
-    for (let px = x + 70; px < x + w; px += 150) for (let py = y + 22; py < y + h - 10; py += 52) g.lineBetween(px, py, px, py + 26);
-    g.lineStyle(4, C.ink).strokeRoundedRect(x, y, w, h, 60);
-    // Rail posts
-    g.fillStyle(C.woodDark);
-    for (let px = x + 60; px < x + w - 40; px += 70) {
-      g.fillCircle(px, y - 4, 6).fillCircle(px, y + h + 4, 6);
+    // Crew: everyone you've recruited except the captain, spread along the dock
+    const mates = [...CHARACTERS.values()].filter((c) => c.id !== captainId && isUnlocked(save, c.id));
+    const gap = (DECK_R - DECK_L) / Math.max(1, mates.length);
+    mates.forEach((def, i) => this.crew.push(this.makeMate(def, DECK_L + gap * (i + 0.5), DECK_Y, i)));
+    if (mates.length <= 1) { // only the free starters so far
+      const g = this.add.graphics();
+      const cx = 640;
+      inkPanel(g, cx - 230, DECK_Y - 230, 460, 64, { fill: C.parch, radius: 8, shadow: 5, stroke: 3 });
+      label(this, cx, DECK_Y - 198, 'Recruit crew in the Shop to fill the dock!', 18, { onDark: false, color: CSS.ink }).setOrigin(0.5);
     }
-    // Lawn deck (the Sunny's grass)
-    g.fillStyle(C.ink).fillRoundedRect(x + 266, y + 116, 440, 220, 40);
-    g.fillStyle(0x58b04a).fillRoundedRect(x + 260, y + 110, 440, 220, 40);
-    g.fillStyle(0x6fcf5c);
-    for (let i = 0; i < 70; i++) g.fillRect(x + 280 + ((i * 53) % 400), y + 126 + ((i * 37) % 190), 5, 2);
-    g.lineStyle(3, C.ink).strokeRoundedRect(x + 260, y + 110, 440, 220, 40);
-    // Mast and a furled sail shadow
-    g.fillStyle(C.ink).fillCircle(x + 484, y + 224, 24);
-    g.fillStyle(C.woodDark).fillCircle(x + 480, y + 220, 22);
-    g.fillStyle(C.parchLight).fillCircle(x + 480, y + 220, 10);
-    // Lion figurehead: gold mane burst with a face
-    const fx = x + w + 104;
-    const fy = y + h / 2;
-    burst(g, fx, fy, 62, 14, C.gold, 0.1);
-    burst(g, fx, fy, 46, 12, C.goldDeep, 0.35);
-    g.fillStyle(C.ink).fillCircle(fx + 3, fy + 3, 30);
-    g.fillStyle(0xffe08a).fillCircle(fx, fy, 30);
-    g.lineStyle(3, C.ink).strokeCircle(fx, fy, 30);
-    g.fillStyle(C.ink).fillCircle(fx - 10, fy - 6, 4).fillCircle(fx + 10, fy - 6, 4).fillTriangle(fx - 5, fy + 4, fx + 5, fy + 4, fx, fy + 10);
-    g.lineStyle(3, C.ink);
-    g.beginPath();
-    g.arc(fx, fy + 10, 10, 0.3, Math.PI - 0.3, false);
-    g.strokePath();
+    this.player = this.makeMate(CHARACTERS.get(captainId)!, Phaser.Math.Clamp(this.startX, DECK_L, DECK_R), DECK_Y, -1);
+
+    this.seaFront = this.add.graphics().setScrollFactor(0);
+    this.makeBubbles();
+    this.makeUi(save, captainId);
+
+    // Cameras: the world follows the player sideways; the HUD camera never scrolls.
+    this.uiCam = this.cameras.add(0, 0, this.scale.width, this.scale.height).setOrigin(0, 0).setZoom(RES).setScroll(-box.ox, -box.oy);
+    this.uiCam.ignore(this.children.list.filter((o) => o !== this.ui));
+    this.cameras.main.ignore(this.ui);
+    this.cameras.main.scrollX = this.cameraTarget();
+
+    this.keys = this.input.keyboard!.addKeys('A,D,LEFT,RIGHT') as Record<string, Phaser.Input.Keyboard.Key>;
+    this.input.keyboard!.on('keydown', (ev: KeyboardEvent) => {
+      if (ev.code === 'KeyE' || ev.code === 'Enter' || ev.code === 'Space') this.talk();
+      else if (ev.code === 'Escape') this.toTitle();
+    });
   }
 
-  private makeSign(s: Station): Phaser.GameObjects.Container {
-    const c = this.add.container(s.x, s.y);
+  // ---- Building ------------------------------------------------------------------------
+
+  private makeMate(def: CharacterDef, x: number, y: number, i: number): Mate {
+    const shadow = this.add.image(x, y + 2, 'shadow').setScale(3.4 / TEX).setAlpha(0.45);
+    const sprite = this.add.image(x, y, `player_${def.id}`).setOrigin(0.5, 0.99).setScale(SCALE);
+    const m: Mate = { def, sprite, shadow, frames: characterFrames(this, def.id), home: x, x, y, facing: i % 2 ? -1 : 1, phase: i * 1.7, line: Math.floor(Math.random() * def.lines.length) };
+    if (i >= 0) {
+      sprite.setInteractive({ useHandCursor: true }).on('pointerdown', () => {
+        if (Math.abs(this.player.x - m.x) <= TALK_RANGE) this.talkTo(m);
+        else this.walkTo = m; // walk over, then talk
+      });
+    }
+    return m;
+  }
+
+  private drawClouds(): void {
+    const g = this.clouds;
+    const puffs: [number, number, number][] = [[0, 10, 26], [28, -6, 32], [60, 8, 26], [30, 16, 24]];
+    for (let i = 0; i < 12; i++) {
+      const x = i * 260 + (i % 3) * 40;
+      const y = 60 + (i % 2) * 70 + (i % 3) * 12;
+      const s = 0.8 + (i % 3) * 0.25;
+      g.fillStyle(C.ink, 0.2);
+      for (const [px, py, r] of puffs) g.fillCircle(x + px * s + 4, y + py * s + 6, (r + 3) * s);
+      g.fillStyle(0xffffff);
+      for (const [px, py, r] of puffs) g.fillCircle(x + px * s, y + py * s, r * s);
+    }
+  }
+
+  /**
+   * The Thousand Sunny moored behind the dock: scenery only. Slower parallax puts it in the
+   * distance; its keel hides behind the dock's back edge. Placed so it sits centred on screen
+   * when the camera is mid-dock.
+   */
+  private makeShip(): Phaser.GameObjects.Image {
+    const img = this.add.image(0, 0, 'art_ship').setOrigin(0.5, 1).setScrollFactor(SHIP_PARALLAX);
+    img.setScale(SHIP_H / img.height);
+    const midScroll = (WORLD_W - Math.min(this.box.w, WORLD_W)) / 2;
+    // A parallax object only gets f × the camera's vertical offset (scrollY = -oy); add the rest back.
+    img.setPosition(this.box.w / 2 + midScroll * SHIP_PARALLAX + 60, DOCK_TOP + 26 + this.box.oy * (1 - SHIP_PARALLAX));
+    this.shipY = img.y;
+    return img;
+  }
+
+  /**
+   * The dock (original art): plank walkway with seams, a front beam and piles down into the
+   * water, plus props along the back edge (bollards, crates, barrels, rope coils, lamps).
+   */
+  private drawDock(): void {
     const g = this.add.graphics();
-    // post
-    g.fillStyle(C.ink).fillRect(-5, -6, 12, 44);
-    g.fillStyle(C.woodDark).fillRect(-6, -8, 10, 44);
-    // plank
-    inkPanel(g, -74, 16, 148, 38, { fill: C.woodLight, skew: 8, shadow: 5 });
-    g.lineStyle(2, C.wood, 0.8).lineBetween(-62, 35, 62, 35);
-    medallion(g, 0, -26, 25, s.color);
-    const icon = this.add.image(0, -26, s.icon).setScale(0.62 / TEX);
-    const t = label(this, 0, 34, s.name, 15, { onDark: false, color: CSS.ink }).setOrigin(0.5);
-    c.add([g, icon, t]);
-    c.setSize(160, 110).setDepth(s.y + 40);
-    const zone = this.add.zone(0, 10, 170, 120).setInteractive({ useHandCursor: true });
-    zone.on('pointerdown', () => this.open(s));
-    zone.on('pointerover', () => c.setScale(1.06));
-    zone.on('pointerout', () => c.setScale(this.near === s ? 1.08 : 1));
-    c.add(zone);
-    return c;
+    const ink = C.ink;
+    const PLANK = 0xc08a52;
+    const PLANK_DARK = 0x9a6a3a;
+    // Piles under the dock (drawn first; the near sea covers their feet)
+    for (let x = 40; x < WORLD_W; x += 150) {
+      g.fillStyle(ink).fillRect(x - 15, DOCK_FRONT, 30, 140);
+      g.fillStyle(0x6e4622).fillRect(x - 12, DOCK_FRONT, 24, 140);
+      g.fillStyle(0x8a5a2b).fillRect(x - 8, DOCK_FRONT, 6, 140);
+    }
+    // Walking surface: planks running across, seams and nails
+    g.fillStyle(ink).fillRect(0, DOCK_TOP - 4, WORLD_W, DOCK_FRONT - DOCK_TOP + 8);
+    g.fillStyle(PLANK).fillRect(0, DOCK_TOP, WORLD_W, DOCK_FRONT - DOCK_TOP);
+    g.fillStyle(0xffffff, 0.12).fillRect(0, DOCK_TOP, WORLD_W, 8);
+    for (let x = 0, k = 0; x < WORLD_W; x += 44, k++) {
+      g.lineStyle(2, PLANK_DARK, 0.9).lineBetween(x, DOCK_TOP, x - 10, DOCK_FRONT);
+      if (k % 3 === 0) g.lineStyle(2, PLANK_DARK, 0.6).lineBetween(x + 6, DOCK_TOP + 22 + (k % 2) * 14, x + 38, DOCK_TOP + 22 + (k % 2) * 14);
+      g.fillStyle(0x5a3a1e).fillCircle(x + 22, DOCK_TOP + 8, 1.6).fillCircle(x + 18, DOCK_FRONT - 8, 1.6);
+    }
+    // Front beam
+    g.fillStyle(ink).fillRect(0, DOCK_FRONT, WORLD_W, 26);
+    g.fillStyle(PLANK_DARK).fillRect(0, DOCK_FRONT + 3, WORLD_W, 19);
+    g.fillStyle(0xffffff, 0.15).fillRect(0, DOCK_FRONT + 3, WORLD_W, 5);
+    for (let x = 40; x < WORLD_W; x += 150) {
+      g.fillStyle(ink).fillCircle(x, DOCK_FRONT + 13, 5);
+      g.fillStyle(0xb0bec5).fillCircle(x, DOCK_FRONT + 13, 3);
+    }
+
+    // Props along the back edge (behind the crew's feet line)
+    const by = DOCK_TOP + 6;
+    const bollard = (x: number) => {
+      inkPanel(g, x - 14, by - 30, 28, 30, { fill: 0x3a4652, radius: 6, shadow: 3, stroke: 3 });
+      inkPanel(g, x - 19, by - 38, 38, 12, { fill: 0x4f5d6b, radius: 5, shadow: 0, stroke: 3 });
+    };
+    const crate = (x: number, s: number) => {
+      inkPanel(g, x - s / 2, by - s, s, s, { fill: 0xb07a42, radius: 2, shadow: 4, stroke: 3 });
+      g.lineStyle(3, 0x7a4f26).lineBetween(x - s / 2 + 5, by - s + 5, x + s / 2 - 5, by - 5).lineBetween(x + s / 2 - 5, by - s + 5, x - s / 2 + 5, by - 5);
+      g.lineStyle(3, ink).strokeRect(x - s / 2, by - s, s, s);
+    };
+    const barrel = (x: number) => {
+      g.fillStyle(ink).fillRoundedRect(x - 20, by - 50, 40, 50, 12);
+      g.fillStyle(0xa8743c).fillRoundedRect(x - 17, by - 47, 34, 44, 10);
+      g.fillStyle(0x2a2420).fillRect(x - 18, by - 39, 36, 5).fillRect(x - 18, by - 15, 36, 5);
+      g.fillStyle(0xffffff, 0.2).fillRect(x - 10, by - 45, 5, 38);
+    };
+    const coil = (x: number) => {
+      g.fillStyle(ink).fillEllipse(x, by - 7, 50, 20);
+      g.fillStyle(0xd9b878).fillEllipse(x, by - 9, 44, 15);
+      g.lineStyle(2, 0x9a7a40).strokeEllipse(x, by - 9, 30, 9).strokeEllipse(x, by - 9, 16, 5);
+    };
+    const lamp = (x: number) => {
+      g.fillStyle(ink).fillRect(x - 5, by - 150, 10, 150);
+      g.fillStyle(0x2a3340).fillRect(x - 3, by - 148, 6, 146);
+      inkPanel(g, x - 15, by - 182, 30, 34, { fill: 0x2a3340, radius: 4, shadow: 3, stroke: 3 });
+      g.fillStyle(0xffe58a).fillRect(x - 10, by - 176, 20, 22);
+      g.fillStyle(ink).fillTriangle(x - 19, by - 182, x + 19, by - 182, x, by - 198);
+    };
+    const props: [number, (x: number) => void][] = [
+      [90, lamp], [260, bollard], [420, (x) => { crate(x, 52); crate(x + 44, 40); }], [700, coil], [880, bollard],
+      [1080, barrel], [1124, barrel], [1300, lamp], [1500, bollard], [1700, (x) => crate(x, 56)], [1760, coil],
+      [1960, barrel], [2140, bollard], [2320, lamp], [2480, (x) => { crate(x, 46); barrel(x + 50); }],
+    ];
+    for (const [x, draw] of props) draw(x);
   }
 
-  private makeBubble(): void {
+  private makeBubbles(): void {
+    // "E Talk" prompt over the nearest crewmate
+    const pg = this.add.graphics();
+    const pt = label(this, 14, 0, 'Talk', 16, { onDark: false, color: CSS.ink }).setOrigin(0, 0.5);
+    const w = pt.width + 54;
+    pg.fillStyle(C.ink).fillRoundedRect(-28 + 3, -18 + 3, w, 36, 16);
+    pg.fillStyle(C.white).fillRoundedRect(-28, -18, w, 36, 16);
+    pg.lineStyle(3, C.ink).strokeRoundedRect(-28, -18, w, 36, 16);
+    this.prompt = this.add.container(0, 0, [pg, keycap(this, -8, 0, 'E', 13), pt]).setVisible(false);
+
+    // Speech bubble (one, reused)
+    this.speechG = this.add.graphics();
+    this.speechText = label(this, 0, 0, '', 17, { onDark: false, color: CSS.ink, weight: 500, style: { wordWrap: { width: 300 }, align: 'center', lineSpacing: 3 } }).setOrigin(0.5, 1);
+    this.speech = this.add.container(0, 0, [this.speechG, this.speechText]).setVisible(false);
+  }
+
+  private makeUi(save: ReturnType<typeof loadSave>, captainId: string): void {
+    const box = this.box;
+    const c = CHARACTERS.get(captainId)!;
+    const rank = rankFor(save.charXp[c.id] ?? 0);
     const g = this.add.graphics();
-    this.bubbleText = label(this, 18, -2, '', 16, { onDark: false, color: CSS.ink }).setOrigin(0, 0.5);
-    const cap = keycap(this, -6, -2, 'E', 14);
-    this.bubble = this.add.container(0, 0, [g, cap, this.bubbleText]).setVisible(false);
-    this.bubble.setData('g', g);
-  }
-
-  private drawBubble(): void {
-    const g = this.bubble.getData('g') as Phaser.GameObjects.Graphics;
-    const w = this.bubbleText.width + 56;
-    g.clear();
-    const x = -30;
-    g.fillStyle(C.ink).fillRoundedRect(x + 4, -22, w, 40, 18);
-    g.fillStyle(C.white).fillRoundedRect(x, -26, w, 40, 18);
-    g.fillTriangle(x + 22, 12, x + 40, 12, x + 18, 28);
-    g.lineStyle(3, C.ink).strokeRoundedRect(x, -26, w, 40, 18);
-    g.lineBetween(x + 22, 14, x + 18, 28).lineBetween(x + 18, 28, x + 40, 14);
-    g.fillStyle(C.white).fillRect(x + 22, 10, 17, 5);
-  }
-
-  /** Top bar: captain portrait plate, Berries and next voyage. */
-  refreshHeader(): void {
-    const c = CHARACTERS.get(this.save.selectedCharacter)!;
-    const st = STAGES.get(this.save.selectedStage)!;
-    const rank = rankFor(this.save.charXp[c.id] ?? 0);
-    this.avatar?.setTexture(`player_${c.id}`);
-    this.plate.removeAll(true);
-    this.plate.setPosition(this.box.left, this.box.top);
-    const W = this.box.w;
-    const g = this.add.graphics();
-    inkPanel(g, 70, 22, 330, 64, { fill: C.seaDeep, skew: 18, shadow: 5 });
-    medallion(g, 64, 54, 38, C.parch);
-    const portrait = this.add.image(64, 64, `player_${c.id}`).setScale(2.9 / CHAR_TEX).setOrigin(0.5, 0.8);
-    const name = display(this, 112, 30, c.name, 24, { shadow: null }).setOrigin(0, 0);
-    for (let i = 0; i < 5; i++) burst(g, 122 + i * 19, 72, 8, 5, i < rank ? C.gold : 0x2a3f55, -Math.PI / 2);
-    const stars = label(this, 222, 72, `Bounty rank ${rank}`, 13, { color: CSS.gold }).setOrigin(0, 0.5);
-
-    inkPanel(g, W - 300, 22, 270, 46, { fill: C.seaDeep, skew: 14, shadow: 5 });
-    medallion(g, W - 292, 45, 17, C.gold);
-    const coin = this.add.image(W - 292, 45, 'ic_coin').setScale(0.5 / TEX);
-    const berries = display(this, W - 266, 45, `${this.save.berries.toLocaleString('en-US')}`, 22, { shadow: null, color: CSS.gold }).setOrigin(0, 0.5);
-    ribbon(g, W - 290, 84, 250, 34, C.red, { tails: false, shadow: 4 });
-    const voyage = label(this, W - 165, 101, `Next voyage: ${st.name}`, 14).setOrigin(0.5);
-    this.plate.add([g, portrait, name, stars, coin, berries, voyage]);
+    const L = box.left;
+    const R = box.right;
+    inkPanel(g, L + 70, box.top + 22, 330, 64, { fill: C.seaDeep, skew: 18, shadow: 5 });
+    medallion(g, L + 64, box.top + 54, 38, C.parch);
+    const portrait = this.add.image(L + 64, box.top + 64, `player_${c.id}`).setScale(2.9 / CHAR_TEX).setOrigin(0.5, 0.8);
+    const name = display(this, L + 112, box.top + 30, c.name, 24, { shadow: null }).setOrigin(0, 0);
+    for (let i = 0; i < 5; i++) burst(g, L + 122 + i * 19, box.top + 72, 8, 5, i < rank ? C.gold : 0x2a3f55, -Math.PI / 2);
+    const stars = label(this, L + 222, box.top + 72, `Bounty rank ${rank}`, 13, { color: CSS.gold }).setOrigin(0, 0.5);
+    inkPanel(g, R - 300, box.top + 22, 270, 46, { fill: C.seaDeep, skew: 14, shadow: 5 });
+    medallion(g, R - 292, box.top + 45, 17, C.gold);
+    const coin = this.add.image(R - 292, box.top + 45, 'ic_coin').setScale(0.68 / TEX);
+    const berries = display(this, R - 266, box.top + 45, save.berries.toLocaleString('en-US'), 22, { shadow: null, color: CSS.gold }).setOrigin(0, 0.5);
+    const crewCount = label(this, R - 30, box.top + 86, `Crew: ${this.crew.length + 1}`, 14).setOrigin(1, 0.5);
+    const hints = hintRow(this, (L + R) / 2, box.bottom - 30, [['A/D', 'Walk'], ['E', 'Talk'], ['Esc', 'Main menu']], CSS.white);
+    const back = new Button(this, L + 110, box.bottom - 34, 170, 46, 'Main menu', () => this.toTitle(), 'sea');
+    this.ui = this.add.container(0, 0, [g, portrait, name, stars, coin, berries, crewCount, hints, back]).setDepth(1000);
   }
 
   // ---- Loop -----------------------------------------------------------------------------
 
   update(time: number, deltaMs: number): void {
-    this.drawSea(time / 1000);
-    if (this.scene.isActive('panel')) {
-      this.bubble.setVisible(false);
-      return;
-    }
+    const t = time / 1000;
     const dt = Math.min(deltaMs / 1000, 1 / 30);
+    const cam = this.cameras.main;
+    const box = this.box;
+
+    // Player input: keys, stick, or walking over to a clicked crewmate
     const k = this.keys;
     let mx = (k.D.isDown || k.RIGHT.isDown ? 1 : 0) - (k.A.isDown || k.LEFT.isDown ? 1 : 0);
-    let my = (k.S.isDown || k.DOWN.isDown ? 1 : 0) - (k.W.isDown || k.UP.isDown ? 1 : 0);
     const pad = this.input.gamepad?.total ? this.input.gamepad.pad1 : undefined;
-    if (pad && Math.hypot(pad.leftStick.x, pad.leftStick.y) > 0.2) {
-      mx = pad.leftStick.x;
-      my = pad.leftStick.y;
+    if (pad) {
+      if (Math.abs(pad.leftStick.x) > 0.2) mx = pad.leftStick.x;
+      else if (pad.left || pad.right) mx = pad.left ? -1 : 1;
+      if (pad.A && !this.padPrev.a) this.talk();
+      if (pad.B && !this.padPrev.b) this.toTitle();
+      this.padPrev = { a: pad.A, b: pad.B };
     }
-    const len = Math.hypot(mx, my);
-    if (len > 1) {
-      mx /= len;
-      my /= len;
+    if (mx) this.walkTo = null;
+    else if (this.walkTo) {
+      const dx = this.walkTo.x - this.player.x;
+      if (Math.abs(dx) <= TALK_RANGE * 0.7) {
+        this.talkTo(this.walkTo);
+        this.walkTo = null;
+      } else mx = Math.sign(dx);
     }
-    const a = this.avatar;
-    a.x = Phaser.Math.Clamp(a.x + mx * SPEED * dt, DECK.x + 30, DECK.x + DECK.w + 70);
-    a.y = Phaser.Math.Clamp(a.y + my * SPEED * dt, DECK.y + 40, DECK.y + DECK.h - 4);
-    if (mx) a.setFlipX(mx < 0);
-    const walking = len > 0.1;
-    a.setAngle(walking ? Math.sin(time / 70) * 5 : 0);
-    this.avatarShadow.setPosition(a.x + 2, a.y + 2);
-    a.setDepth(a.y);
-    this.avatarShadow.setDepth(a.y - 1);
+    const p = this.player;
+    p.x = Phaser.Math.Clamp(p.x + mx * SPEED * dt, DECK_L - 20, DECK_R + 20);
+    if (mx) p.facing = mx < 0 ? -1 : 1;
+    this.pose(p, mx !== 0, t, 0);
 
-    let near: Station | null = null;
-    let best = 125 * 125;
-    for (const s of this.stations) {
-      const d = (s.x - a.x) ** 2 + (s.y + 20 - a.y) ** 2;
+    // Crew wander near their spots, and stop to face the captain when close
+    let near: Mate | null = null;
+    let best = TALK_RANGE;
+    for (let i = 0; i < this.crew.length; i++) {
+      const m = this.crew[i];
+      const d = Math.abs(m.x - p.x);
+      const close = d < 170 || m === this.speaker;
+      const target = close ? m.x : Phaser.Math.Clamp(m.home + Math.sin(t * 0.32 + m.phase) * 46, DECK_L, DECK_R);
+      const step = Phaser.Math.Clamp(target - m.x, -40 * dt, 40 * dt);
+      m.x += step;
+      if (close) m.facing = p.x < m.x ? -1 : 1;
+      else if (Math.abs(step) > 0.01) m.facing = step < 0 ? -1 : 1;
+      this.pose(m, !close && Math.abs(step) > 0.2 * dt, t, i + 1);
       if (d < best) {
         best = d;
-        near = s;
+        near = m;
       }
     }
-    if (near !== this.near) {
-      for (const s of this.stations) s.sign?.setScale(s === near ? 1.08 : 1);
-      this.near = near;
-      if (near) {
-        this.bubbleText.setText(near.verb);
-        this.drawBubble();
-      }
+
+    // Bubbles
+    const talking = this.speaker && this.time.now < this.speechUntil;
+    if (!talking && this.speaker) {
+      this.speaker = null;
+      this.speech.setVisible(false);
     }
-    this.bubble.setVisible(!!near).setPosition(a.x - 4, a.y - 74 + Math.sin(time / 200) * 2).setDepth(1000);
-    if (pad) {
-      if (pad.A && !this.padPrevA && this.near) this.open(this.near);
-      this.padPrevA = pad.A;
-      const start = pad.buttons[9]?.pressed ?? false;
-      if (start && !this.padPrevStart) this.toTitle();
-      this.padPrevStart = start;
-    }
+    if (this.speaker) this.speech.setPosition(this.speaker.x, this.speaker.y - 98);
+    this.near = near;
+    this.prompt.setVisible(!!near && near !== this.speaker);
+    if (near) this.prompt.setPosition(near.x, near.y - 112);
+
+    // Camera follows sideways; sea layers pan for parallax
+    cam.scrollX += (this.cameraTarget() - cam.scrollX) * Math.min(1, dt * 6);
+    const sy = HORIZON + box.oy;
+    drawCelSea(this.seaBack, 0, box.w, sy, box.h - sy, t, cam.scrollX * 0.4);
+    this.ship.setY(this.shipY + Math.sin(t * 0.9) * 3).setAngle(Math.sin(t * 0.6) * 0.4); // gently riding the swell
+    const fy = WATERLINE + box.oy;
+    drawCelSea(this.seaFront, 0, box.w, fy, box.h - fy, t * 1.2, cam.scrollX);
   }
 
-  private drawSea(t: number): void {
-    const g = this.sea;
+  private cameraTarget(): number {
+    const view = this.box.w;
+    if (view >= WORLD_W) return (WORLD_W - view) / 2;
+    return Phaser.Math.Clamp(this.player.x - view / 2, 0, WORLD_W - view);
+  }
+
+  /** Place a character: animation frames when hand-drawn, else a gentle bob. */
+  private pose(m: Mate, moving: boolean, t: number, i: number): void {
+    const f = m.frames;
+    const anim: CharacterAnim = moving && f.run.length ? 'run' : 'idle';
+    let bob = 0;
+    if (f[anim].length) m.sprite.setTexture(f[anim][Math.floor(t * ANIM_FPS[anim] + i) % f[anim].length]);
+    else bob = moving ? Math.abs(Math.sin(t * 12)) * -4 : Math.sin(t * 2.4 + i) * 1.5;
+    m.sprite.setPosition(m.x, m.y + bob).setFlipX(m.facing < 0);
+    m.shadow.setPosition(m.x, m.y + 2);
+  }
+
+  // ---- Talking ----------------------------------------------------------------------------
+
+  private talk(): void {
+    if (this.near) this.talkTo(this.near);
+  }
+
+  private talkTo(m: Mate): void {
+    m.line = (m.line + 1) % m.def.lines.length;
+    const text = m.def.lines[m.line];
+    this.speaker = m;
+    this.speechUntil = this.time.now + 3500 + text.length * 40;
+    this.speechText.setText(text);
+    const w = Math.max(160, this.speechText.width + 36);
+    const h = this.speechText.height + 26;
+    const g = this.speechG;
     g.clear();
-    g.fillGradientStyle(0x1b6fa8, 0x1b6fa8, 0x0a2a4a, 0x0a2a4a, 1).fillRect(this.box.left, this.box.top, this.box.w, this.box.h);
-    for (let row = 0; row < Math.ceil(this.box.h / 62) + 1; row++) {
-      const y = this.box.top + 20 + row * 62;
-      g.lineStyle(3, 0xe6f7ff, 0.12 + (row % 3) * 0.05);
-      for (let x = this.box.left - 100; x < this.box.right + 100; x += 170) {
-        const ox = x + ((t * 14 + row * 37) % 170);
-        g.beginPath();
-        g.arc(ox, y + Math.sin(t * 1.5 + row) * 3, 22, Math.PI * 1.15, Math.PI * 1.85, false);
-        g.strokePath();
-      }
-    }
-    // Wake behind the stern
-    g.fillStyle(0xe6f7ff, 0.18);
-    for (let i = 0; i < 6; i++) g.fillEllipse(DECK.x - 40 - i * 34, DECK.y + DECK.h / 2 + Math.sin(t * 2 + i) * 6, 50 - i * 5, 110 - i * 12);
+    g.fillStyle(C.ink).fillRoundedRect(-w / 2 + 4, -h - 6 + 4, w, h, 18);
+    g.fillStyle(C.white).fillRoundedRect(-w / 2, -h - 6, w, h, 18);
+    g.lineStyle(3, C.ink).strokeRoundedRect(-w / 2, -h - 6, w, h, 18);
+    g.fillStyle(C.white).fillTriangle(-12, -8, 12, -8, 0, 14);
+    g.lineStyle(3, C.ink).lineBetween(-12, -6, 0, 14).lineBetween(0, 14, 12, -6);
+    this.speechText.setPosition(0, -19);
+    this.speech.setPosition(m.x, m.y - 98).setVisible(true).setScale(0.6);
+    this.tweens.add({ targets: this.speech, scale: 1, duration: 160, ease: 'Back.Out' });
   }
 
-  private open(s: Station): void {
-    if (this.scene.isActive('panel')) return;
-    this.scene.launch('panel', {
-      ...s.menu(),
-      onClose: () => {
-        this.panelClosedAt = this.time.now;
-        this.refreshHeader();
-      },
-    });
-  }
-
-  // ---- MenuHost ----
-
-  persist(): void {
-    writeSave(this.save);
-    this.refreshHeader();
-  }
-
-  reload(save: SaveData): void {
-    this.save = save;
-    writeSave(save);
-    this.scene.stop('panel');
-    this.scene.restart();
-  }
-
-  startRun(): void {
-    this.scene.stop('panel');
+  /** Back to the title screen (the main menu). */
+  toTitle(): void {
+    if (this.leaving) return;
+    this.leaving = true;
     this.cameras.main.fadeOut(250, 8, 37, 65);
-    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () =>
-      this.scene.start('run', { characterId: this.save.selectedCharacter, stageId: this.save.selectedStage }),
-    );
+    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => this.scene.start('title'));
   }
 }
-

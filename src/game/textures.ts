@@ -175,7 +175,8 @@ export function generatePlaceholderTextures(scene: Phaser.Scene): void {
     g.fillStyle(0xffd0b8).fillCircle(2.5, 2.4, 0.7);
   });
 
-  for (const c of CHARACTERS.values()) drawCharacter(g, make, c);
+  // Hand-drawn characters (src/assets/characters/<id>/stand.png, loaded at boot) replace the generated chibi.
+  for (const c of CHARACTERS.values()) if (!scene.textures.exists(`player_${c.id}`)) drawCharacter(g, make, c);
 
   for (const st of STAGES.values()) {
     const base = hex(st.ground.base);
@@ -272,4 +273,21 @@ function drawCharacter(g: G, make: Make, c: CharacterDef): void {
       if (c.id === 'luffy') g.fillStyle(0xc62828).fillRect(3.7, top + 0.6, 8.6, 1.1);
     }
   }, CHAR_TEX);
+}
+
+export type CharacterAnim = 'idle' | 'run' | 'dash';
+/** Frames per second for hand-drawn character animations. */
+export const ANIM_FPS: Record<CharacterAnim, number> = { idle: 6, run: 12, dash: 12 };
+
+/**
+ * Animation frames from hand-drawn art (`player_<id>_<anim>_<n>`, loaded by BootScene).
+ * Empty lists for characters that only have the generated single pose.
+ */
+export function characterFrames(scene: Phaser.Scene, id: string): Record<CharacterAnim, string[]> {
+  const frames = (anim: CharacterAnim): string[] => {
+    const out: string[] = [];
+    for (let i = 0; scene.textures.exists(`player_${id}_${anim}_${i}`); i++) out.push(`player_${id}_${anim}_${i}`);
+    return out;
+  };
+  return { idle: frames('idle'), run: frames('run'), dash: frames('dash') };
 }

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { applyRun, buyShop, equipHaki, hakiModifiers, isStageOpen, isUnlocked, metaCounts, rankFor, recruit, shopCost } from './meta';
+import { applyRun, buyShop, DUPE_XP, equipHaki, gachaPool, hakiModifiers, isStageOpen, isUnlocked, metaCounts, pullCrew, rankFor, setUnlockAll, shopCost } from './meta';
+import { Rng } from './rng';
 import { computeBounty, xpToNext, type RunSummary } from './progression';
-import { emptySave, exportSave, importSave, loadSave, migrate, writeSave, type KeyValueStore } from './save';
-import { SHOP } from '../data';
+import { chooseSave, emptySave, exportSave, importSave, loadSave, migrate, useSaveStore, writeSave, type KeyValueStore } from './save';
+import { CHARACTERS, CREWS, SHOP } from '../data';
 
 const run = (over: Partial<RunSummary> = {}): RunSummary => ({
   characterId: 'luffy', stageId: 'shells_town', timeSec: 600, kills: 500, level: 20, berries: 40,
@@ -50,6 +51,29 @@ describe('save', () => {
     expect(exportSave(emptySave())).toContain('"game": "grand-line-survivor"');
   });
 
+  it('routes default saves to the active store (guest session / signed-in cache)', () => {
+    const store = memStore();
+    useSaveStore(store);
+    try {
+      const s = emptySave();
+      s.berries = 321;
+      expect(writeSave(s)).toBe(true);
+      expect(loadSave(store).berries).toBe(321);
+      expect(loadSave().berries).toBe(321);
+    } finally {
+      useSaveStore(undefined);
+    }
+  });
+
+  it('a signed-in player starts from the newer copy, else carried-in progress', () => {
+    const a = { save: 'cloud', t: 200 };
+    const b = { save: 'device', t: 100 };
+    expect(chooseSave(a, b, 'old').source).toBe('cloud');
+    expect(chooseSave({ ...a, t: 50 }, b, 'old').source).toBe('local'); // played offline since the last upload
+    expect(chooseSave(null, null, 'old')).toEqual({ save: 'old', source: 'carry' });
+    expect(chooseSave(null, null, null).source).toBe('none');
+  });
+
   it('migrates a v1 save and survives garbage', () => {
     const v1 = { version: 1, berries: 40, bestBounty: { luffy: 3797000 }, runs: 1 };
     const s = migrate(v1);
@@ -75,15 +99,37 @@ describe('meta', () => {
     expect(metaCounts(s).revives).toBe(1);
   });
 
-  it('recruits characters and respects achievement unlocks', () => {
+  it('recruits through the crew gacha; dupes give rank XP; achievement unlocks are never pulled', () => {
     const s = emptySave();
+    const cost = CREWS.find((c) => c.id === 'straw_hat')!.pullCost;
     expect(isUnlocked(s, 'luffy')).toBe(true);
     expect(isUnlocked(s, 'zoro')).toBe(false);
-    expect(recruit(s, 'zoro')).toBe(false); // no Berries
-    s.berries = 10_000;
-    expect(recruit(s, 'zoro')).toBe(true);
-    expect(isUnlocked(s, 'zoro')).toBe(true);
-    expect(recruit(s, 'jinbe')).toBe(false); // achievement-only
+    expect(pullCrew(s, 'straw_hat', 1, new Rng(1))).toBeNull(); // no Berries
+    s.berries = cost * 10;
+    const res = pullCrew(s, 'straw_hat', 10, new Rng(1))!;
+    expect(res).toHaveLength(10);
+    expect(s.berries).toBe(0);
+    expect(gachaPool('straw_hat')).not.toContain('jinbe');
+    for (const r of res) {
+      expect(CHARACTERS.get(r.id)!.crew).toBe('straw_hat');
+      expect(isUnlocked(s, r.id)).toBe(true);
+    }
+    const dupes = res.filter((r) => !r.isNew).length;
+    const xp = Object.values(s.charXp).reduce((a, b) => a + b, 0);
+    expect(xp).toBe(dupes * DUPE_XP);
+    expect(new Set(s.recruited).size).toBe(s.recruited.length);
+  });
+
+  it('?unlockall unlocks every character without changing the save', () => {
+    const s = emptySave();
+    setUnlockAll(true);
+    try {
+      expect([...CHARACTERS.keys()].every((id) => isUnlocked(s, id))).toBe(true);
+      expect(s.recruited).toEqual([]);
+    } finally {
+      setUnlockAll(false);
+    }
+    expect(isUnlocked(s, 'jinbe')).toBe(false);
   });
 
   it('opens stages in order and applies a cleared run', () => {

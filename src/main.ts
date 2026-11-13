@@ -11,6 +11,12 @@ import { HudScene } from './game/scenes/HudScene';
 import { ResultScene } from './game/scenes/ResultScene';
 import { HubScene } from './game/scenes/HubScene';
 import { PanelScene } from './game/scenes/PanelScene';
+import { GachaScene } from './game/scenes/GachaScene';
+import { SailScene } from './game/scenes/SailScene';
+import { ShopScene } from './game/scenes/ShopScene';
+import { ShopFrontScene } from './game/scenes/ShopFrontScene';
+import { AccountScene } from './game/scenes/AccountScene';
+import { ProfileScene } from './game/scenes/ProfileScene';
 
 const game = new Phaser.Game({
   type: Phaser.WEBGL,
@@ -30,7 +36,7 @@ const game = new Phaser.Game({
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   input: { gamepad: true, activePointers: 3 },
-  scene: [BootScene, TitleScene, HubScene, PanelScene, RunScene, HudScene, ResultScene],
+  scene: [BootScene, AccountScene, TitleScene, ProfileScene, HubScene, PanelScene, SailScene, ShopFrontScene, GachaScene, ShopScene, RunScene, HudScene, ResultScene],
 });
 
 // Exposed for debugging in the browser console.

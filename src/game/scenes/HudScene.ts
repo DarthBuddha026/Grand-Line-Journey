@@ -108,7 +108,7 @@ export class HudScene extends Phaser.Scene {
     medallion(s, this.sw - 212, 35, 15, C.parch);
     medallion(s, this.sw - 192, 79, 15, C.gold);
     this.add.image(this.sw - 212, 35, 'ic_skull').setScale(0.4 / TEX);
-    this.add.image(this.sw - 192, 79, 'ic_coin').setScale(0.42 / TEX);
+    this.add.image(this.sw - 192, 79, 'ic_coin').setScale(0.62 / TEX);
     // Portrait
     medallion(s, 58, 62, 40, C.parch, C.gold);
     this.add.image(58, 78, `player_${run.character.id}`).setScale(3 / CHAR_TEX).setOrigin(0.5, 0.85);

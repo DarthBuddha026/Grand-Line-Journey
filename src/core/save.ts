@@ -27,7 +27,8 @@ export interface SaveData {
   clears: Record<string, string[]>;
 }
 
-const KEY = 'grand-line-survivor/save';
+export const SAVE_KEY = 'grand-line-survivor/save';
+const KEY = SAVE_KEY;
 /** The game was called Grand Line Journey before; saves under the old key are migrated on load. */
 const LEGACY_KEY = 'grand-line-journey/save';
 const GAME_ID = 'grand-line-survivor';
@@ -58,12 +59,41 @@ export interface KeyValueStore {
   setItem(key: string, value: string): void;
 }
 
+/** Where loadSave/writeSave go when no store is passed; set by the account layer. */
+let activeStore: KeyValueStore | null | undefined;
+
+/**
+ * Point every default loadSave/writeSave at `store`: sessionStorage for guests, a
+ * cloud-synced cache for Google players. `undefined` restores plain localStorage.
+ */
+export function useSaveStore(store: KeyValueStore | null | undefined): void {
+  activeStore = store;
+}
+
 function defaultStore(): KeyValueStore | null {
+  if (activeStore !== undefined) return activeStore;
   try {
     return globalThis.localStorage ?? null;
   } catch {
     return null;
   }
+}
+
+export interface StampedSave {
+  save: string;
+  /** ms since epoch of the last write */
+  t: number;
+}
+
+/**
+ * Which copy a signed-in player starts from: the newer of the cloud copy and this
+ * device's cache; with neither, the progress carried in (an old local or guest save).
+ */
+export function chooseSave(cloud: StampedSave | null, local: StampedSave | null, carry: string | null): { save: string | null; source: 'cloud' | 'local' | 'carry' | 'none' } {
+  if (cloud && (!local || cloud.t >= local.t)) return { save: cloud.save, source: 'cloud' };
+  if (local) return { save: local.save, source: 'local' };
+  if (carry) return { save: carry, source: 'carry' };
+  return { save: null, source: 'none' };
 }
 
 /** Normalise any parsed object (v1 or v2, possibly partial) into a valid v2 save. */

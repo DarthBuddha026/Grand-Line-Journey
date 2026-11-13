@@ -27,6 +27,9 @@ export interface Recipe {
   recipe: readonly [string, string];
 }
 
+/** The character's own kit: main attack and skills (vs. shared weapons/items). */
+const isKit = (c: Choice): boolean => c.kind === 'mainAttack' || c.kind === 'skill';
+
 export function choiceKey(c: Choice): string {
   return `${c.kind}:${c.id}`;
 }
@@ -101,11 +104,20 @@ export class Loadout {
   /**
    * Roll `count` distinct choices. Upgrades to owned things are weighted a bit
    * higher so builds come together; `luck` nudges that further. A held card is
-   * included first; boosts fill any empty slots.
+   * included first; boosts fill any empty slots. The character's own kit (main
+   * attack + skills) always gets one card but at most two, so weapons and items
+   * still show up; the cap lifts only when nothing else is left to offer.
    */
   rollChoices(pools: LoadoutPools, rng: Rng, count: number, luck = 0): Choice[] {
     const pool = this.candidates(pools);
     const picked: Choice[] = [];
+    const take = (from: Choice[]): boolean => {
+      const c = rng.pickWeighted(from, (ch) => (ch.level > 1 ? 1.4 + luck : 1));
+      if (!c) return false;
+      picked.push(c);
+      pool.splice(pool.indexOf(c), 1);
+      return true;
+    };
     if (this.held) {
       const h = pool.find((c) => choiceKey(c) === choiceKey(this.held!));
       if (h) {
@@ -114,11 +126,11 @@ export class Loadout {
       }
       this.held = null;
     }
+    if (picked.length < count && !picked.some(isKit)) take(pool.filter(isKit));
     while (picked.length < count && pool.length > 0) {
-      const c = rng.pickWeighted(pool, (ch) => (ch.level > 1 ? 1.4 + luck : 1));
-      if (!c) break;
-      picked.push(c);
-      pool.splice(pool.indexOf(c), 1);
+      const others = pool.filter((c) => !isKit(c));
+      const capped = picked.filter(isKit).length >= LIMITS.kitChoicesMax;
+      if (!take(capped && others.length ? others : pool)) break;
     }
     const boosts: BoostId[] = ['heal', 'atk', 'berries'];
     for (let i = 0; picked.length < count && i < boosts.length; i++) picked.push({ kind: 'boost', id: boosts[i], level: 0 });

@@ -23,7 +23,7 @@ import { BossSystem } from '../run/bosses';
 import { executeAction } from '../run/actions';
 import { Kit } from '../run/kits';
 import { createWeapon, updateWeapon, type WeaponRuntime } from '../run/weapons';
-import { CHAR_TEX, TEX } from '../textures';
+import { ANIM_FPS, CHAR_TEX, characterFrames, TEX, type CharacterAnim } from '../textures';
 import { itemIcon, skillIcon, weaponIcon } from '../icons';
 
 export interface ChoiceInfo {
@@ -35,11 +35,18 @@ export interface ChoiceInfo {
   maxLevel: number;
 }
 
+/** Berries per enemy drop: base, +1 every everySec of run time (3 at the start, 7 at 10:00, 11 at 20:00). */
+const BERRY_DROP = { base: 3, everySec: 150 } as const;
+
 export type RunState = 'playing' | 'levelup' | 'chest' | 'anvil' | 'cleared' | 'paused' | 'ended';
+
+/** stage: the final boss ends the run (you may opt into endless). endless: the run goes on until you fall. */
+export type RunMode = 'stage' | 'endless';
 
 export interface RunSceneData {
   characterId: string;
   stageId: string;
+  mode?: RunMode;
 }
 
 export type AnvilOption = { kind: 'fuse'; recipe: Recipe } | { kind: 'enhance'; id: string };
@@ -65,6 +72,8 @@ export class RunScene extends Phaser.Scene implements RunContext {
   mods!: ModBlock;
   loadout!: Loadout;
   player!: PlayerState;
+  /** In-run animation frames per pose (empty when the character has no hand-drawn art). */
+  private playerFrames: Record<CharacterAnim, string[]> = { idle: [], run: [], dash: [] };
   controls!: InputController;
   enemies!: EnemySystem;
   hitboxes!: HitboxSystem;
@@ -91,6 +100,7 @@ export class RunScene extends Phaser.Scene implements RunContext {
   holds = 0;
   eliminates = 0;
   cleared = false;
+  mode: RunMode = 'stage';
   terrainHere: TerrainType | null = null;
   hakiFound: string[] = [];
   alliancesFound: string[] = [];
@@ -131,6 +141,7 @@ export class RunScene extends Phaser.Scene implements RunContext {
     this.rng = new Rng(flags.seed ?? Date.now());
     this.character = CHARACTERS.get(data.characterId) ?? CHARACTERS.values().next().value!;
     this.stage = STAGES.get(data.stageId) ?? STAGES.values().next().value!;
+    this.mode = data.mode ?? 'stage';
     this.runTime = flags.startTime;
     this.state = 'playing';
     this.level = 1;
@@ -190,6 +201,7 @@ export class RunScene extends Phaser.Scene implements RunContext {
       sprite: this.add.image(0, 0, `player_${c.id}`).setDepth(DEPTH.player).setOrigin(0.5, 0.8),
     };
     cam.startFollow(this.player.sprite, false, 0.12, 0.12);
+    this.playerFrames = characterFrames(this, c.id); // hand-drawn animation frames, if this character has any
 
     this.controls = new InputController(this);
     this.fx = new FxSystem(this, () => this.player);
@@ -554,6 +566,10 @@ export class RunScene extends Phaser.Scene implements RunContext {
 
     const invuln = this.isPlayerInvulnerable();
     const blink = p.iframes > 0 && !invuln && Math.floor(p.iframes * 20) % 2 === 0;
+    // Hand-drawn characters animate (idle / run / dash); generated ones stay a single pose.
+    const f = this.playerFrames;
+    const anim = p.dashT > 0 && f.dash.length ? 'dash' : (mx !== 0 || my !== 0) && f.run.length ? 'run' : 'idle';
+    if (f[anim].length) p.sprite.setTexture(f[anim][Math.floor(this.runTime * ANIM_FPS[anim]) % f[anim].length]);
     p.sprite
       .setPosition(p.x, p.y)
       .setFlipX(p.facing < 0)
@@ -686,7 +702,7 @@ export class RunScene extends Phaser.Scene implements RunContext {
     const d = e.def;
     const luck = 1 + this.mods.get('luck');
     this.pickups.dropXp(e.x, e.y, d.xp * (e.elite ? 5 : 1));
-    if (this.rng.chance((d.berryChance ?? 0) * luck)) this.pickups.drop('berry', e.x, e.y, 1 + Math.floor(this.runTime / 300));
+    if (this.rng.chance((d.berryChance ?? 0) * luck)) this.pickups.drop('berry', e.x, e.y, BERRY_DROP.base + Math.floor(this.runTime / BERRY_DROP.everySec));
     if (this.rng.chance((d.meatChance ?? 0) * luck)) this.pickups.drop('meat', e.x, e.y, 0.2);
     if (e.elite) this.pickups.drop('chest', e.x, e.y, 1);
     if (e.boss) this.onBossKilled(e);
@@ -720,6 +736,8 @@ export class RunScene extends Phaser.Scene implements RunContext {
     this.state = 'cleared';
     this.hazards.clear();
     this.enemies.clearShots();
+    // Endless mode skips the "stage clear" prompt: the clear still counts, the run goes on.
+    if (this.mode === 'endless') this.continueEndless();
   }
 
   /** HUD: keep playing after clearing the stage. */
@@ -978,7 +996,7 @@ export class RunScene extends Phaser.Scene implements RunContext {
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
       this.scene.stop('hud');
       if (to === 'title') this.scene.start('title');
-      else this.scene.start('result', { summary, outcome, saved });
+      else this.scene.start('result', { summary, outcome, saved, mode: this.mode });
     });
   }
 }

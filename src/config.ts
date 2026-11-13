@@ -79,14 +79,15 @@ export const DEPTH = {
   damage: 60,
 } as const;
 
-/** URL flags: ?debug shows perf counters, ?seed=N fixes RNG, ?time=S starts the run at S seconds. */
-export function readUrlFlags(): { debug: boolean; seed?: number; startTime: number } {
+/** URL flags: ?debug shows perf counters, ?seed=N fixes RNG, ?time=S starts the run at S seconds, ?unlockall is test mode: every character, 999,999,999 Berries, nothing saved. */
+export function readUrlFlags(): { debug: boolean; seed?: number; startTime: number; unlockAll: boolean } {
   const p = new URLSearchParams(globalThis.location?.search ?? '');
   const seed = p.get('seed');
   return {
     debug: p.has('debug'),
     seed: seed !== null ? Number(seed) : undefined,
     startTime: Number(p.get('time') ?? 0) || 0,
+    unlockAll: p.has('unlockall'),
   };
 }
 

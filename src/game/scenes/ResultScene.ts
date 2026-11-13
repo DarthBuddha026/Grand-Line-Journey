@@ -2,16 +2,19 @@ import Phaser from 'phaser';
 import { CHARACTERS, STAGES, WEAPONS } from '../../data';
 import { formatBounty, type RunSummary } from '../../core/progression';
 import type { RunOutcome } from '../../core/meta';
+import type { RunMode } from './RunScene';
 import { weaponIcon } from '../icons';
 import { centerCamera, relayoutOnResize } from '../layout';
 import { CHAR_TEX, TEX } from '../textures';
-import { TEXT_RES } from '../../config';
+import { GAME_H, GAME_W, RES, TEXT_RES } from '../../config';
+import { shareImage } from '../share';
 import { backdrop, Button, C, CSS, display, FONT, formatTime, gradientFill, hintRow, label, medallion, parchment, ribbon, speedLines } from '../ui';
 
 interface ResultData {
   summary: RunSummary;
   outcome: RunOutcome;
   saved: boolean;
+  mode?: RunMode;
 }
 
 const POSTER = { x: 330, y: 372, w: 440, h: 630 };
@@ -27,6 +30,7 @@ export class ResultScene extends Phaser.Scene {
 
   create(data: ResultData): void {
     const { summary, outcome, saved } = data;
+    this.mode = data.mode ?? 'stage';
     const box = centerCamera(this);
     relayoutOnResize(this, () => data);
     const character = CHARACTERS.get(summary.characterId)!;
@@ -99,21 +103,46 @@ export class ResultScene extends Phaser.Scene {
     if (!saved) label(this, rx, 606, "Progress couldn't be saved in this browser. Export your save from the Captain's Log.", 13, { color: '#ff8a80' });
 
     // Buttons (enabled after a beat so a death-frame keypress can't skip the poster)
-    const back = new Button(this, rx + 150, 660, 280, 56, 'Back to the Sunny', () => this.go('hub'), 'gold');
-    const again = new Button(this, rx + 450, 660, 240, 56, 'Sail again', () => this.go('run', summary), 'sea');
-    hintRow(this, rx + 300, 704, [['Enter', 'Sunny'], ['R', 'Sail again']], CSS.dim);
-    back.setEnabled(false);
-    again.setEnabled(false);
+    const caption = `WANTED: ${character.posterName}! Bounty ${formatBounty(outcome.bounty)} Berries after ${formatTime(summary.timeSec)} ${summary.cleared ? "clearing" : "at"} ${stage.name}. Can you beat it? #GrandLineSurvivor`;
+    const back = new Button(this, rx + 118, 660, 236, 56, 'Back to the Sunny', () => this.go('hub'), 'gold');
+    const again = new Button(this, rx + 335, 660, 180, 56, 'Sail again', () => this.go('run', summary), 'sea');
+    const share = new Button(this, rx + 518, 660, 164, 56, 'Share', () => this.share(box, caption), 'sea');
+    this.toast = label(this, rx + 518, 618, '', 13, { color: CSS.goldLight }).setOrigin(0.5);
+    hintRow(this, rx + 300, 704, [['Enter', 'Sunny'], ['R', 'Sail again'], ['S', 'Share']], CSS.dim);
+    for (const b of [back, again, share]) b.setEnabled(false);
     this.time.delayedCall(900, () => {
       back.setEnabled(true).setFocus(true);
       again.setEnabled(true);
+      share.setEnabled(true);
       this.input.keyboard!.once('keydown-ENTER', () => this.go('hub'));
       this.input.keyboard!.once('keydown-R', () => this.go('run', summary));
+      this.input.keyboard!.on('keydown-S', () => this.share(box, caption));
       this.input.gamepad?.once('down', () => this.go('hub'));
     });
   }
 
   private going = false;
+  private mode: RunMode = 'stage';
+  private toast!: Phaser.GameObjects.Text;
+  private sharing = false;
+
+  /** Snapshot the 1280×720 result screen (poster + log) and hand it to the share sheet. */
+  private share(box: { ox: number; oy: number }, caption: string): void {
+    if (this.sharing || this.going) return;
+    this.sharing = true;
+    this.game.renderer.snapshotArea(Math.round(box.ox * RES), Math.round(box.oy * RES), Math.round(GAME_W * RES), Math.round(GAME_H * RES), async (img) => {
+      try {
+        const blob = await (await fetch((img as HTMLImageElement).src)).blob();
+        const how = await shareImage(blob, 'grand-line-survivor-bounty.png', caption);
+        this.toast.setText(how === 'saved' ? 'Poster saved, caption copied!' : how === 'shared' ? 'Shared!' : '');
+      } catch (e) {
+        console.warn('Share failed', e);
+        this.toast.setText("Couldn't share from this browser");
+      } finally {
+        this.sharing = false;
+      }
+    });
+  }
 
   private go(where: 'hub' | 'run', summary?: RunSummary): void {
     if (this.going) return;
@@ -122,7 +151,7 @@ export class ResultScene extends Phaser.Scene {
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
       this.going = false;
       if (where === 'hub') this.scene.start('hub');
-      else this.scene.start('run', { characterId: summary!.characterId, stageId: summary!.stageId });
+      else this.scene.start('run', { characterId: summary!.characterId, stageId: summary!.stageId, mode: this.mode });
     });
   }
 

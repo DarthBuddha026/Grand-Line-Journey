@@ -227,6 +227,7 @@ const ICONS: Record<string, (g: G) => void> = {
 export function generateIcons(scene: Phaser.Scene): void {
   const g = scene.make.graphics({ x: 0, y: 0 }, false);
   for (const [name, draw] of Object.entries(ICONS)) {
+    if (scene.textures.exists(`ic_${name}`)) continue; // replaced by src/assets/icons/<name>.png
     g.clear();
     g.setScale(TEX);
     draw(g);
@@ -263,6 +264,10 @@ const CUSTOM_ICON: Record<string, string> = { lost: 'compass', rumbleBall: 'star
 
 export function weaponIcon(def: WeaponDef): string {
   return `ic_${WEAPON_ICON[def.id] ?? ACTION_ICON[def.levels[0].action.type] ?? 'sword'}`;
+}
+
+export function actionIcon(type: string): string {
+  return `ic_${ACTION_ICON[type] ?? 'star'}`;
 }
 
 export function itemIcon(id: string): string {

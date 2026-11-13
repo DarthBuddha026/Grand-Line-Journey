@@ -7,6 +7,7 @@
       "action": { "type": "transform", "duration": 10, "scale": 2.2, "invuln": true, "stats": [{ "stat": "spd", "pct": 0.5 }], "every": 0.9,
         "action": { "type": "screen", "dmg": 40, "knockback": 220, "effects": { "stun": 0.3 }, "color": "#fff6c8" } } },
     "skills": ["gatling", "gear_second", "conquerors_haki"],
+    "lines": ["Is it lunch yet? It feels like lunch.","Next island, I bet there's a huge adventure waiting!","Glad you're on my crew. Let's go!","Somebody save me some meat!"],
     "unlock": { "type": "default" },
     "look": { "body": "#d83a3a", "hair": "#1b1b1b", "pants": "#2a4a8a", "hat": "#f2d04b" }
   },
@@ -18,7 +19,8 @@
       "action": { "type": "transform", "duration": 8, "stats": [{ "stat": "atk", "pct": 0.2 }], "every": 0.45,
         "action": { "type": "cone", "dirs": 6, "radius": 75, "arc": 45, "dmg": 22, "knockback": 80, "color": "#e0e0e0" } } },
     "skills": ["shishi_sonson", "enma", "lost"],
-    "unlock": { "type": "berries", "cost": 300 },
+    "lines": ["I was not lost. The ship moved.","Wake me when something worth cutting shows up.","Three swords, one goal. Don't slow down."],
+    "unlock": { "type": "gacha" },
     "look": { "body": "#f5f5f5", "hair": "#5bbf5b", "pants": "#2e2e2e" }
   },
   {
@@ -29,7 +31,8 @@
       "action": { "type": "transform", "duration": 6, "every": 0.22,
         "action": { "type": "strike", "target": "random", "count": 2, "radius": 24, "dmg": 30, "delay": 0.2, "color": "#ffe066", "effects": { "stun": 0.3 } } } },
     "skills": ["mirage_tempo", "cat_burglar", "weather_egg"],
-    "unlock": { "type": "berries", "cost": 400 },
+    "lines": ["Every Berry counts. Every. Single. One.","Storm brewing to the west. I can feel it.","Touch my maps and you owe me interest."],
+    "unlock": { "type": "gacha" },
     "look": { "body": "#64b5f6", "hair": "#ff8a3d", "pants": "#3949ab" }
   },
   {
@@ -39,7 +42,8 @@
     "special": { "id": "pop_green", "name": "Pop Green: Field", "desc": "Plants burst up, rooting and damaging enemies in a wide area.", "cooldown": 45,
       "action": { "type": "zone", "target": "nearest", "radius": 80, "duration": 6, "dmg": 9, "tick": 0.5, "color": "#4caf50", "effects": { "slow": 0.9, "slowTime": 1 } } },
     "skills": ["observation_sniper", "tabasco_star", "captains_lie"],
-    "unlock": { "type": "berries", "cost": 400 },
+    "lines": ["I once outran a sea king. Twice. Before breakfast.","My legs aren't shaking, it's the deck rocking!","Need a sniper? You're looking at the best."],
+    "unlock": { "type": "gacha" },
     "look": { "body": "#c8a26b", "hair": "#1b1b1b", "pants": "#6d4c41", "skin": "#c68b59" }
   },
   {
@@ -50,7 +54,8 @@
       "action": { "type": "dash", "target": "aim", "distance": 190, "dmg": 50, "width": 22,
         "trail": { "type": "zone", "radius": 20, "duration": 4, "dmg": 8, "tick": 0.4, "color": "#4fc3f7", "effects": { "burn": 8, "burnTime": 2 } } } },
     "skills": ["sky_walk", "chef", "raid_suit"],
-    "unlock": { "type": "berries", "cost": 600 },
+    "lines": ["Dinner's in ten. Nobody goes hungry on my watch.","A good kick and a good meal: both need balance.","Keep your hands off the fridge, captain."],
+    "unlock": { "type": "gacha" },
     "look": { "body": "#263238", "hair": "#f4d03f", "pants": "#263238" }
   },
   {
@@ -61,7 +66,8 @@
       "action": { "type": "transform", "duration": 10, "scale": 2.0, "stats": [{ "stat": "atk", "pct": 0.5 }, { "stat": "defense", "flat": 0.3 }], "every": 1,
         "action": { "type": "pulse", "radius": 65, "dmg": 25, "knockback": 160, "color": "#ff8a80" } } },
     "skills": ["rumble_ball", "doctor", "cotton_candy"],
-    "unlock": { "type": "berries", "cost": 600 },
+    "lines": ["Hurt anywhere? I'll patch you up!","Compliments don't make me happy, you jerk!","I'm testing a new medicine. Want to... no? Okay."],
+    "unlock": { "type": "gacha" },
     "look": { "body": "#ff8a80", "hair": "#8d5a3b", "pants": "#1e88e5", "hat": "#ec407a", "skin": "#8d5a3b" }
   },
   {
@@ -71,7 +77,8 @@
     "special": { "id": "gigantesco_mano", "name": "Gigantesco Mano", "desc": "Giant arms crush a huge area.", "cooldown": 45,
       "action": { "type": "strike", "target": "nearest", "count": 1, "radius": 95, "dmg": 90, "delay": 0.6, "color": "#e91e63", "effects": { "stun": 1 } } },
     "skills": ["mil_fleur", "archaeologist", "cien_fleur_wing"],
-    "unlock": { "type": "berries", "cost": 800 },
+    "lines": ["The old stones here have stories, if you know how to read them.","I wonder how long this ship would last in a storm. Purely curious.","Reading on deck is my favourite kind of quiet."],
+    "unlock": { "type": "gacha" },
     "look": { "body": "#7b1fa2", "hair": "#1b1b1b", "pants": "#4a148c" }
   },
   {
@@ -81,7 +88,8 @@
     "special": { "id": "radical_beam", "name": "Radical Beam", "desc": "A huge laser along your aim.", "cooldown": 40,
       "action": { "type": "beam", "target": "aim", "length": 420, "width": 24, "dmg": 25, "duration": 1.2, "tick": 0.15, "color": "#64b5f6" } },
     "skills": ["cola_engine", "general_franky", "super"],
-    "unlock": { "type": "berries", "cost": 900 },
+    "lines": ["This ship? Built with every ounce of my soul!","Need something fixed? Upgraded? Made to fire lasers?","My new pose is ready. Feast your eyes!"],
+    "unlock": { "type": "gacha" },
     "look": { "body": "#26c6da", "hair": "#29b6f6", "pants": "#1565c0", "tall": true }
   },
   {
@@ -91,7 +99,8 @@
     "special": { "id": "soul_king_concert", "name": "Soul King Concert", "desc": "A music wave puts every enemy on screen to sleep.", "cooldown": 50,
       "action": { "type": "screen", "dmg": 20, "effects": { "stun": 4 }, "color": "#b39ddb" } },
     "skills": ["yohoho_revival", "hanauta_sancho", "frostbite"],
-    "unlock": { "type": "berries", "cost": 900 },
+    "lines": ["Lovely day! Though I have no eyes to see it.","Shall I play something? A sea shanty, perhaps?","My heart races at the thought of adventure. I have no heart, of course."],
+    "unlock": { "type": "gacha" },
     "look": { "body": "#212121", "hair": "#1b1b1b", "pants": "#212121", "skin": "#f5f5f5", "hat": "#212121", "tall": true }
   },
   {
@@ -101,6 +110,7 @@
     "special": { "id": "vagabond_drill", "name": "Vagabond Drill", "desc": "A water tornado drags enemies in and grinds them down.", "cooldown": 45,
       "action": { "type": "zone", "target": "nearest", "radius": 75, "duration": 5, "dmg": 11, "tick": 0.4, "color": "#4fc3f7", "effects": { "pull": 140 } } },
     "skills": ["fishman_karate", "helmsman", "sea_child"],
+    "lines": ["The current here is gentle. Let's make good time.","A helmsman reads the sea like an old friend.","Steady, captain. We sail as one."],
     "unlock": { "type": "achievement", "id": "impel_down" },
     "look": { "body": "#ff7043", "hair": "#1b1b1b", "pants": "#263238", "skin": "#5c8fc8", "tall": true }
   },
@@ -112,7 +122,8 @@
       "action": { "type": "transform", "duration": 5, "every": 0.14,
         "action": { "type": "strike", "target": "random", "count": 1, "radius": 28, "dmg": 35, "delay": 0.5, "color": "#ff5722", "effects": { "burn": 8, "burnTime": 3 } } } },
     "skills": ["absolute_justice", "magma_pools", "inugami_guren"],
-    "unlock": { "type": "berries", "cost": 2000 },
+    "lines": ["Justice does not bend. Neither do I.","Pirates on deck... what a strange arrangement.","Hmph. Keep your guard up."],
+    "unlock": { "type": "gacha" },
     "look": { "body": "#c62828", "hair": "#1b1b1b", "pants": "#f5f5f5", "hat": "#37474f", "tall": true }
   },
   {
@@ -122,7 +133,8 @@
     "special": { "id": "yata_no_kagami", "name": "Yata no Kagami", "desc": "Blink between enemies at light speed, damaging along the path.", "cooldown": 45,
       "action": { "type": "blink", "count": 9, "dmg": 45, "radius": 30 } },
     "skills": ["ama_no_murakumo", "light_speed_kick", "so_scary"],
-    "unlock": { "type": "berries", "cost": 2000 },
+    "lines": ["Ooh, scary~ ...not really.","Speed is everything, you know~","Light travels fast. I travel faster~"],
+    "unlock": { "type": "gacha" },
     "look": { "body": "#f9e04b", "hair": "#1b1b1b", "pants": "#f9e04b", "tall": true }
   },
   {
@@ -132,7 +144,8 @@
     "special": { "id": "ice_age", "name": "Ice Age", "desc": "Freeze the whole screen for 4 s.", "cooldown": 55,
       "action": { "type": "screen", "dmg": 15, "effects": { "stun": 4 }, "color": "#b3e5fc" } },
     "skills": ["ice_time", "ice_bicycle", "lazy_justice"],
-    "unlock": { "type": "berries", "cost": 2000 },
+    "lines": ["Wake me if anything important happens.","Lazy justice is still justice.","Nice breeze. Could use a little more chill."],
+    "unlock": { "type": "gacha" },
     "look": { "body": "#f5f5f5", "hair": "#1b1b1b", "pants": "#1e88e5", "tall": true }
   },
   {
@@ -142,6 +155,7 @@
     "special": { "id": "galaxy_impact", "name": "Galaxy Impact", "desc": "A massive impact craters the battlefield.", "cooldown": 55,
       "action": { "type": "strike", "target": "nearest", "count": 1, "radius": 150, "dmg": 160, "delay": 0.7, "color": "#ffeb3b", "knockback": 320, "effects": { "stun": 1 } } },
     "skills": ["cannonball_pitch", "hero_of_marines", "power_nap"],
+    "lines": ["Got any rice crackers? No? Hmph.","Fist of love! Works every time.","Ha! You remind me of a reckless grandson of mine."],
     "unlock": { "type": "achievement", "id": "hero_koby" },
     "look": { "body": "#f5f5f5", "hair": "#cfd8dc", "pants": "#37474f", "tall": true }
   },
@@ -153,6 +167,7 @@
       "action": { "type": "transform", "duration": 10, "scale": 2.4, "stats": [{ "stat": "defense", "flat": 0.4 }], "every": 0.8,
         "action": { "type": "pulse", "radius": 115, "dmg": 30, "knockback": 200, "color": "#ffd54f" } } },
     "skills": ["strategist", "pet_goat", "okaki_snack"],
+    "lines": ["Order is how a fleet survives a storm.","Has anyone seen my goat?","Discipline today, victory tomorrow."],
     "unlock": { "type": "achievement", "id": "grand_line" },
     "look": { "body": "#f5f5f5", "hair": "#1b1b1b", "pants": "#37474f", "hat": "#8d6e63", "tall": true }
   },
@@ -163,7 +178,8 @@
     "special": { "id": "venom_demon", "name": "Venom Demon: Hell's Judgement", "desc": "A poison giant floods the area around you for 8 s.", "cooldown": 55,
       "action": { "type": "zone", "follow": true, "radius": 135, "duration": 8, "dmg": 14, "tick": 0.4, "color": "#8e24aa", "effects": { "burn": 6, "burnTime": 3, "slow": 0.3, "slowTime": 1 } } },
     "skills": ["poison_cloud", "chief_warden", "upset_stomach"],
-    "unlock": { "type": "berries", "cost": 1500 },
+    "lines": ["Excuse me... I need the bathroom. Again.","No prisoner escapes on my watch.","Poison? Don't worry, I keep it to myself. Mostly."],
+    "unlock": { "type": "gacha" },
     "look": { "body": "#4a148c", "hair": "#1b1b1b", "pants": "#263238", "hat": "#212121", "tall": true }
   },
   {
@@ -173,6 +189,7 @@
     "special": { "id": "honesty_impact", "name": "Honesty Impact", "desc": "A huge forward blast.", "cooldown": 45,
       "action": { "type": "beam", "target": "aim", "length": 300, "width": 44, "dmg": 95, "duration": 0.35, "tick": 0.3, "knockback": 300, "color": "#fff59d" } },
     "skills": ["observation_haki", "soru", "heros_will"],
+    "lines": ["I'll keep training until I'm strong enough!","Someday I'll be an admiral. Just watch!","Every voyage teaches me something new."],
     "unlock": { "type": "default" },
     "look": { "body": "#f5f5f5", "hair": "#f48fb1", "pants": "#1e88e5" }
   }
