@@ -8,6 +8,7 @@
   "eliteChance": 0.007,
   "ground": { "base": "#5d5560", "detail": "#4e4752" },
   "terrain": [{ "type": "heat", "cycle": ["heat", "cold", "poison"], "period": 60, "scale": 260, "threshold": 0.72, "seed": 41 }],
+  "obstacles": { "cell": 260, "chance": 0.5, "min": 40, "max": 130, "seed": 43, "color": "#4a4250" },
   "hazards": [],
   "segments": [
     { "from": 0, "to": 60, "rate": 1.8, "maxAlive": 60, "enemies": [{ "id": "impel_jailer", "weight": 1 }] },

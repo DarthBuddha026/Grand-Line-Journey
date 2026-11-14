@@ -4,7 +4,7 @@
  * can be sampled anywhere in the endless world.
  */
 
-function hash2(ix: number, iy: number, seed: number): number {
+export function hash2(ix: number, iy: number, seed: number): number {
   let h = Math.imul(ix, 374761393) ^ Math.imul(iy, 668265263) ^ Math.imul(seed, 2147483647);
   h = Math.imul(h ^ (h >>> 13), 1274126177);
   h ^= h >>> 16;

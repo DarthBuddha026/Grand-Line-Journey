@@ -64,12 +64,12 @@ export class BootScene extends Phaser.Scene {
       generatePlaceholderTextures(this);
       generateIcons(this);
       loading.setText('Checking your account…');
-      // Resume a remembered Google sign-in / this session's guest choice, else ask (account screen).
+      // Resume a logged-in account / this session's guest choice, else ask (account screen).
       // Never hang on the network: after 8 s fall back to the account screen.
       const timeout = new Promise<boolean>((r) => setTimeout(() => r(false), 8000));
       Promise.race([restoreAccount().catch(() => false), timeout]).then((ok) => {
         loading.destroy();
-        this.scene.start(ok ? 'title' : 'account');
+        this.scene.start(ok ? 'title' : 'account', {});
       });
     });
   }

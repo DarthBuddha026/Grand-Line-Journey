@@ -2,9 +2,8 @@ import Phaser from 'phaser';
 import { ACHIEVEMENTS, ALLIANCES, CHARACTERS, STAGES } from '../../data';
 import { isUnlocked, rankFor } from '../../core/meta';
 import { formatBounty } from '../../core/progression';
-import { loadSave } from '../../core/save';
 import { hex } from '../../config';
-import { account, googleConfigured, prepareGoogle, signInWithGoogle, signOut } from '../account';
+import { account, signOut } from '../account';
 import type { MenuHost } from '../menus';
 import { backdrop, Button, C, CSS, display, inkPanel, label, medallion, parchment, screenChrome } from '../ui';
 import { centerCamera, relayoutOnResize } from '../layout';
@@ -19,16 +18,15 @@ const CARD = { x: 50, y: 96, w: 440, h: 548 };
 const GRID = { x: 520, y: 96, w: 330, h: 124, gap: 18 };
 
 /**
- * Profile (main menu): the account card (Google or guest, with sign-in / sign-out) and a
- * grid of lifetime stats. Signing in from here carries a guest's progress into a new
- * Google account; signing out returns to the sign-in screen.
+ * Profile (main menu): the account card (account or guest, with log in / log out) and a
+ * grid of lifetime stats. Logging in from here carries a guest's progress into the
+ * account; logging out returns to the account screen.
  */
 export class ProfileScene extends Phaser.Scene {
   private d!: ProfileData;
   private buttons: Button[] = [];
   private acts: (() => void)[] = [];
   private focus = 0;
-  private status!: Phaser.GameObjects.Text;
   private busy = false;
   private openedAt = 0;
 
@@ -51,7 +49,6 @@ export class ProfileScene extends Phaser.Scene {
       .setPosition(box.left, box.top)
       .setInteractive(new Phaser.Geom.Rectangle(0, 0, box.w, box.h), Phaser.Geom.Rectangle.Contains);
     screenChrome(this, box, 'PROFILE', [['↑↓', 'Select'], ['Enter', 'Confirm'], ['Esc', 'Back']]).setText(this.d.host.save.berries.toLocaleString('en-US'));
-    void prepareGoogle()?.catch(() => undefined);
     this.drawAccount();
     this.drawStats();
 
@@ -68,7 +65,7 @@ export class ProfileScene extends Phaser.Scene {
   private drawAccount(): void {
     const save = this.d.host.save;
     const acc = account();
-    const google = acc?.mode === 'google';
+    const user = acc?.mode === 'user';
     const c = CHARACTERS.get(save.selectedCharacter) ?? CHARACTERS.values().next().value!;
     const { x, y, w, h } = CARD;
     const cx = x + w / 2;
@@ -80,25 +77,23 @@ export class ProfileScene extends Phaser.Scene {
 
     // Account badge
     const by = y + 262;
-    const badge = google ? 'Google account' : 'Guest';
+    const badge = user ? 'Account' : 'Guest';
     const t = label(this, 0, 0, badge, 16, { onDark: false, color: CSS.white });
     const bw = t.width + 40;
-    inkPanel(g, cx - bw / 2, by, bw, 32, { fill: google ? C.seaMid : C.wood, skew: 10, shadow: 3, stroke: 2.5 });
+    inkPanel(g, cx - bw / 2, by, bw, 32, { fill: user ? C.seaMid : C.wood, skew: 10, shadow: 3, stroke: 2.5 });
     t.setPosition(cx, by + 16).setOrigin(0.5).setDepth(1);
-    const note = google
-      ? `${acc?.email ?? ''}\nProgress is saved to the cloud.`
+    const note = user
+      ? 'Progress is saved to your account.\nLog in on any device to keep playing.'
       : 'Guest progress is erased when you close the browser.\nLog in to keep it.';
-    label(this, cx, by + 46, note, 15, { onDark: false, weight: 500, color: google ? CSS.inkSoft : '#b3261e', style: { align: 'center', wordWrap: { width: w - 50 } } }).setOrigin(0.5, 0);
+    label(this, cx, by + 46, note, 15, { onDark: false, weight: 500, color: user ? CSS.inkSoft : '#b3261e', style: { align: 'center', wordWrap: { width: w - 50 } } }).setOrigin(0.5, 0);
 
     // Actions
-    const primary: [string, () => void, 'gold' | 'red'] = google ? ['Sign out', () => this.doSignOut(), 'red'] : ['Log in or Create an Account', () => this.doSignIn(), 'gold'];
+    const primary: [string, () => void, 'gold' | 'red'] = user ? ['Log out', () => this.doSignOut(), 'red'] : ['Log in or Create an Account', () => this.doSignIn(), 'gold'];
     const b1 = new Button(this, cx, y + h - 112, 320, 54, primary[0], primary[1], primary[2]);
-    if (!google && !googleConfigured()) b1.setEnabled(false);
     const b2 = new Button(this, cx, y + h - 48, 320, 54, 'Back', () => this.close(), 'sea');
     this.buttons = [b1, b2];
     this.acts = [primary[1], () => this.close()];
-    this.status = label(this, cx, y + h - 152, !google && !googleConfigured() ? 'Google sign-in is not set up in this build yet.' : '', 14, { onDark: false, weight: 500, color: '#b3261e' }).setOrigin(0.5);
-    this.setFocus(google ? 1 : googleConfigured() ? 0 : 1);
+    this.setFocus(user ? 1 : 0);
   }
 
   private drawStats(): void {
@@ -132,27 +127,18 @@ export class ProfileScene extends Phaser.Scene {
   }
 
   private setFocus(i: number): void {
-    if (i === 0 && !this.buttons[0].enabled) i = 1;
     this.focus = i;
     this.buttons.forEach((b, k) => b.setFocus(k === i));
   }
 
+  /** A guest goes to the account screen, bringing their progress if they have any. */
   private doSignIn(): void {
     if (this.busy) return;
     const save = this.d.host.save;
     const progress = save.runs > 0 || save.berries > 0 || save.recruited.length > 0;
     this.busy = true;
-    this.status.setColor(CSS.inkSoft).setText('Opening Google sign-in…');
-    signInWithGoogle(progress ? JSON.stringify(save) : null)
-      .then(() => {
-        this.scene.stop();
-        this.d.host.reload(loadSave()); // the title restarts on the account's save
-      })
-      .catch((e: { code?: string; message?: string }) => {
-        this.busy = false;
-        const cancelled = e?.code === 'auth/popup-closed-by-user' || e?.code === 'auth/cancelled-popup-request';
-        this.status.setColor('#b3261e').setText(cancelled ? 'Sign-in cancelled.' : `Could not sign in: ${e?.message ?? e}`);
-      });
+    this.scene.stop('title');
+    this.scene.start('account', { fromProfile: true, carry: progress ? JSON.stringify(save) : null });
   }
 
   private doSignOut(): void {
@@ -160,7 +146,7 @@ export class ProfileScene extends Phaser.Scene {
     this.busy = true;
     void signOut().then(() => {
       this.scene.stop('title');
-      this.scene.start('account');
+      this.scene.start('account', {}); // {}: with no data Phaser reuses the previous start's (the last form)
     });
   }
 

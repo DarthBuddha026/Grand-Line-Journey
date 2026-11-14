@@ -31,6 +31,21 @@ export function buyShop(save: SaveData, id: string): boolean {
   return true;
 }
 
+/** Berries spent on every shop level bought so far. */
+export function shopSpent(save: SaveData): number {
+  let total = 0;
+  for (const def of SHOP.values()) for (let lv = 0; lv < shopLevel(save, def.id); lv++) total += shopCost(def, lv);
+  return total;
+}
+
+/** Undo every Shipwright purchase and refund it in full. Returns the refund. */
+export function resetShop(save: SaveData): number {
+  const refund = shopSpent(save);
+  save.berries += refund;
+  save.shop = {};
+  return refund;
+}
+
 export function metaCounts(save: SaveData): { rerolls: number; holds: number; eliminates: number; revives: number } {
   const out = { rerolls: 0, holds: 0, eliminates: 0, revives: 0 };
   for (const def of SHOP.values()) if (def.meta) out[def.meta] += shopLevel(save, def.id);

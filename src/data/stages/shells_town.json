@@ -7,7 +7,8 @@
   "hpScalePerMin": 0.12,
   "eliteChance": 0.004,
   "ground": { "base": "#c9b98a", "detail": "#b8a776" },
-  "terrain": [{ "type": "water", "scale": 420, "threshold": 0.74, "seed": 11 }],
+  "terrain": [{ "type": "water", "box": { "cell": 420, "chance": 0.5, "min": 90, "max": 240 }, "seed": 11 }],
+  "obstacles": { "cell": 260, "chance": 0.5, "min": 40, "max": 130, "seed": 13, "color": "#9a6b3f" },
   "hazards": [],
   "segments": [
     { "from": 0, "to": 60, "rate": 1.2, "maxAlive": 40, "enemies": [{ "id": "marine_recruit", "weight": 1 }] },

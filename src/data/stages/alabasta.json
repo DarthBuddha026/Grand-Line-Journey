@@ -9,8 +9,9 @@
   "ground": { "base": "#e3c27a", "detail": "#d1ab5f" },
   "terrain": [
     { "type": "quicksand", "scale": 300, "threshold": 0.72, "seed": 23 },
-    { "type": "water", "scale": 600, "threshold": 0.82, "seed": 29 }
+    { "type": "water", "box": { "cell": 700, "chance": 0.35, "min": 100, "max": 220 }, "seed": 29 }
   ],
+  "obstacles": { "cell": 300, "chance": 0.4, "min": 50, "max": 150, "seed": 31, "color": "#c99a52" },
   "hazards": [{ "type": "sandstorm", "from": 180, "every": 120, "duration": 25 }],
   "segments": [
     { "from": 0, "to": 60, "rate": 1.4, "maxAlive": 50, "enemies": [{ "id": "billions_grunt", "weight": 1 }] },

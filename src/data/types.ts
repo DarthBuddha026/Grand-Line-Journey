@@ -1,3 +1,4 @@
+import type { BoxLayout } from '../core/boxes';
 import type { ModKey, RunModPatch, StatModifier } from '../core/stats';
 
 /**
@@ -220,9 +221,18 @@ export interface TerrainLayer {
   /** Cycle the layer's type over time (Impel Down's shifting floors). */
   cycle?: TerrainType[];
   period?: number;
-  scale: number;
-  threshold: number; // noise above this value is terrain
+  /** Organic blobs from noise: feature size, and noise above `threshold` is terrain. */
+  scale?: number;
+  threshold?: number;
+  /** Rectangles instead of blobs (core/boxes.ts); `scale`/`threshold` are then unused. */
+  box?: Omit<BoxLayout, 'seed'>;
   seed: number;
+}
+
+/** Solid blocks the player and enemies walk around (bosses smash through). */
+export interface StageObstacles extends BoxLayout {
+  /** Block colour; the top face and shadow side are shaded from it. */
+  color: string;
 }
 
 export interface StageHazard {
@@ -244,6 +254,7 @@ export interface StageDef {
   eliteChance: number;
   ground: { base: string; detail: string };
   terrain: TerrainLayer[];
+  obstacles?: StageObstacles;
   hazards: StageHazard[];
   segments: SpawnSegment[];
   events: StageEvent[];

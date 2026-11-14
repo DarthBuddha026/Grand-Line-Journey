@@ -7,7 +7,8 @@
   "hpScalePerMin": 0.16,
   "eliteChance": 0.006,
   "ground": { "base": "#b0a89a", "detail": "#9c9486" },
-  "terrain": [{ "type": "water", "scale": 380, "threshold": 0.7, "seed": 37 }],
+  "terrain": [{ "type": "water", "box": { "cell": 380, "chance": 0.6, "min": 90, "max": 240 }, "seed": 37 }],
+  "obstacles": { "cell": 260, "chance": 0.55, "min": 40, "max": 140, "seed": 39, "color": "#8f8a84" },
   "hazards": [{ "type": "bombard", "from": 900, "every": 1.1, "dmg": 16, "radius": 32 }],
   "segments": [
     { "from": 0, "to": 60, "rate": 1.6, "maxAlive": 60, "enemies": [{ "id": "enies_guard", "weight": 1 }] },

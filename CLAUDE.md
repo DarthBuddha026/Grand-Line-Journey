@@ -23,7 +23,9 @@ npm run dev          # Vite dev server
 npm run build        # tsc --noEmit + vite build → dist/ (static; relative paths for itch.io)
 npm run typecheck
 npm run preview      # serve the built dist/
-npm test             # vitest (node env, src/**/*.test.ts): src/core logic + content validation
+npm run server       # accounts API + SQLite on :8787 (run beside dev/preview)
+npm start            # production: serve dist/ + the API from one Node process
+npm test             # vitest (node env): src/core logic, content validation, server/app.test.mjs (API on an in-memory DB)
 npm run test:watch
 npx vitest run src/core/meta.test.ts         # single file
 npx vitest run -t "fuses two max-level"      # single test by name
@@ -71,7 +73,7 @@ Every attack, skill effect and Special is an `ActionDef` executed by `src/game/r
 **Pure core vs Phaser layer.** `src/core/` has no Phaser imports and is unit-tested:
 - spatial hash, pools and wave director
 - loadout (level-up rolls, Hold/Eliminate, chests, Alliance fusion, anvil enhancement)
-- progression (XP curve, bounty) and noise (terrain)
+- progression (XP curve, bounty), noise (terrain blobs) and boxes (`core/boxes.ts`: endless deterministic rectangles, one per grid cell, kept `BOX_MARGIN` inside it and never within `START_CLEAR` of the run start)
 - save (v2 with migration + export/import)
 - meta (shop, recruitment, stage unlocks, bounty rank, Haki, achievements, and `applyRun`, which folds a finished run into the save)
 
@@ -92,18 +94,18 @@ The run states are `playing | levelup | chest | anvil | cleared | paused | ended
 - `enemies.ts`: pool, archetype AI, statuses (stun, slow, burn, fear), elites and enemy shots.
 - `bosses.ts`: data-driven patterns (charge, slam, radial, aimed, summon, zones, teleport) with telegraphs. The Observation `telegraphLead` mod extends them.
 - `hazards.ts`: anything that hurts the player (boss slams, wax zones, the Buster Call bombardment, sandstorm vision).
-- `terrain.ts`: noise-based seawater, quicksand and Impel Down's cycling heat, cold and poison floors. The Devil Fruit seawater rule is in `RunScene.updateTerrainEffects`.
+- `terrain.ts`: walk-on terrain and solid blocks. A stage's `terrain` layers are noise blobs (`scale`/`threshold`: quicksand, Impel Down's cycling heat, cold and poison floors) or rectangles (`box`: seawater pools). The optional `obstacles` field is solid blocks: `terrain.pushOut` keeps the player and non-boss enemies out (enemies slide toward the nearer corner; bosses, attacks, shots and pickups pass over). The run start is always clear. The Devil Fruit seawater rule is in `RunScene.updateTerrainEffects`.
 - `pickups.ts`: XP (merges past 200 orbs), Berries, meat, and treasure (chest, anvil, Haki fragment), which must be walked over.
 
 **Pooled-object gotcha:** enemies, hitboxes and pickups are recycled from fixed pools (`CAPS` in config.ts). An object can be released and re-acquired as something else within the same frame, so anything that holds a reference across frames must check identity, not just `alive`. `BossSystem` stores the def for this reason. `Pool.release` swap-removes, so iterate `pool.active` backwards when releasing. Never allocate game objects mid-run.
 
 **Scenes:**
-- `boot` validates data, generates placeholder textures, then `restoreAccount()` → `title`, or `account` (first launch: "Log in or Create an Account" (Google sign-in) / Play as guest).
-- `profile` (main menu → Profile): account card (sign in / sign out) + lifetime stats.
+- `boot` validates data, generates placeholder textures, then `restoreAccount()` → `title`, or `account` (first launch: Log in / Create an Account / Play as guest; the forms are HTML `<input>`s positioned over the canvas and removed on shutdown).
+- `profile` (main menu → Profile): account card (a guest's "Log in or Create an Account" opens `account` with their progress to carry; Log out) + lifetime stats.
 - `title` is the main menu: a row of icon buttons (Profile, Achievements, Shop, Set Sail, Pirate Ship → `hub`, Settings, Quit). It implements `MenuHost`: Achievements and Settings open `panel` (a generic list+detail menu; configs in `src/game/menus.ts`), Profile and Shop launch their own scenes on top; its first click is also the audio-unlock gesture.
 - `hub` is the harbour: a code-drawn wooden dock in front (where you and the crew stand) with the Thousand Sunny (`art_ship`, src/assets/art/ship.png) moored behind as scenery at slower parallax: walk the dock (A/D) and press E by a recruited crewmate to hear one of their `lines` (characters.json). The deck scrolls with the player; the HUD is on a second fixed camera. Crew use `characterFrames` (textures.ts) for idle/run frames when they have hand-drawn art. The sea is `drawCelSea` (src/game/sea.ts), shared with the title.
 - `shopfront` is the main menu's Shop desk (Nakama / Shipwright / Back); it launches `gacha` or `shop` on top. Launched scenes draw in `main.ts` scene-list order, so sub-screens must come after the screen that opens them.
-- `shop` is the Shipwright (via `shopfront`): Abilities/Stats tabs (split on `meta` in shop.json), a tile grid with level pips and SOLD!, and a description box. `gacha` and `shop` share `screenChrome` from ui.ts.
+- `shop` is the Shipwright (via `shopfront`): Abilities/Stats tabs (split on `meta` in shop.json), a tile grid with level pips and SOLD!, a description box, and Reset all (R, press twice; `resetShop` in core/meta.ts refunds every Berry spent). `gacha` and `shop` share `screenChrome` from ui.ts.
 - `gacha` is the Nakama screen (via `shopfront`): one banner card per crew (`CREWS` in data/index.ts: `tag`, `color`, `pullCost`), with ×1/×10 pulls via `pullCrew` in core/meta.ts and a speed-line reveal.
 - `sail` is the main menu's Set Sail flow in one scene: captain grid (rows per crew) → Haki (three slot cards; only once the player owns a Haki, otherwise skipped both ways) → mode (`RunMode`: `stage`, `endless`; Time mode is a "coming soon" card) → stage, then `run` with `{ characterId, stageId, mode }`. Endless mode auto-continues past the stage clear (the clear still counts); `result` carries the mode into "Sail again".
 - `run` + `hud` run in parallel; the HUD reads RunScene state every frame and calls `choose`, `reroll`, `hold`, `eliminate`, `chooseAnvil`, `closeChest`, `continueEndless`, `retire`, `togglePause` and `quitRun`.
@@ -136,6 +138,6 @@ Phaser reuses scene instances, so reset per-run fields in `init()`/`create()`, n
 
 **Accounts and saves** (`src/game/account.ts`): `loadSave`/`writeSave` with no store argument go to the store set by `useSaveStore` (`core/save.ts`).
 - **Guest:** `sessionStorage`, wiped when the browser closes. The choice is remembered for the session only.
-- **Google:** Firebase Auth + Firestore doc `saves/{uid}` = `{ save: <JSON string>, updatedAt }`. A cache in localStorage under `<save key>@<uid>` keeps loads synchronous. Writes push to the cloud about 1 s later and on tab hide. At sign-in `chooseSave` picks the newer of the cloud copy and the device cache, else carried-in progress: a guest's save when signing in from Profile, or the pre-accounts localStorage save for the first Google account on that browser.
-- **Config:** `VITE_FIREBASE_*` in `.env.local` (see `.env.example`). Without it the Google button is disabled and only guest play works. Firebase is code-split and only downloaded when configured. Security rules live in `firestore.rules`.
-- **Popups:** `signInWithGoogle` must be called straight from a click or key handler, so `prepareGoogle()` preloads Firebase when the sign-in screen or Profile opens.
+- **Account:** username + password on our own server (`server/app.mjs`: plain `node:http` + `node:sqlite`, no dependencies). Tables `users` (scrypt `salt:hash`), `sessions` (sha256 of a random bearer token, 180-day expiry) and `saves` (`save` JSON string + `updated`). Endpoints: `POST /api/register|login|logout`, `GET|PUT /api/save`. Failed logins/registrations are rate-limited per IP in memory.
+- **Client:** the token lives in localStorage; a cache under `<save key>@<username>` keeps loads synchronous, and writes are pushed about 1 s later and on tab hide (`keepalive`). At login `chooseSave` picks the newer of the server copy and the device cache, else carried-in progress: a guest's save when logging in from Profile, or the pre-accounts localStorage save for the first account on that browser. If the server is unreachable at boot, a player with a device copy plays offline; a 401 sends them back to the account screen.
+- **Running it:** `npm run server` (port 8787, `data/grandline.db`) next to `npm run dev`/`preview` (Vite proxies `/api`). In production `npm run build && npm start` serves `dist/` and the API together; `PORT`, `DB_PATH` and `ALLOWED_ORIGIN` (CORS, only when the game is hosted elsewhere and built with `VITE_API_URL`) are read from the environment. `data/` is git-ignored: back up the database.

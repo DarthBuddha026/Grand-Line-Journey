@@ -64,7 +64,7 @@ let activeStore: KeyValueStore | null | undefined;
 
 /**
  * Point every default loadSave/writeSave at `store`: sessionStorage for guests, a
- * cloud-synced cache for Google players. `undefined` restores plain localStorage.
+ * server-synced cache for account players. `undefined` restores plain localStorage.
  */
 export function useSaveStore(store: KeyValueStore | null | undefined): void {
   activeStore = store;

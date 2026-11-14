@@ -30,7 +30,7 @@ const TILE = { w: 104, h: 110, gap: 8 };
 /** Face close-up on a captain tile: crop width = head width × this, in portrait-texture pixels. */
 const FACE_ZOOM = 1.25;
 /** Per-portrait overrides (lower = closer), e.g. Luffy, whose wide hat would otherwise zoom out. */
-const FACE_ZOOM_BY_KEY: Record<string, number> = { player_luffy: 0.85, player_usopp: 0.9, player_chopper: 0.8 };
+const FACE_ZOOM_BY_KEY: Record<string, number> = { player_luffy: 0.85, player_usopp: 0.9, player_chopper: 0.8, player_franky: 0.5, player_brook: 1.0 };
 
 /** Where a portrait's head is: top opaque row and the head's horizontal centre (cached per texture). */
 const faces = new Map<string, { top: number; cx: number; w: number; crop: number }>();

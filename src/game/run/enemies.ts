@@ -67,6 +67,7 @@ export class EnemySystem {
   /** Shared scratch buffer for hash queries (consume before the next query). */
   readonly scratch = new Int32Array(CAPS.enemies);
   private readonly sepScratch = new Int32Array(64);
+  private readonly blockOut = { x: 0, y: 0 };
   private readonly ctx: RunContext;
   private readonly cb: EnemyCallbacks;
 
@@ -358,6 +359,28 @@ export class EnemySystem {
             const push = ((minD - d) / d) * 0.5 * Math.min(1, dt * 20);
             e.x += ox * push;
             e.y += oy * push;
+          }
+        }
+      }
+
+      // Blocks: pushed out, and walkers slide toward the block's nearer corner instead of
+      // stalling against it. Bosses smash straight through.
+      if (!e.boss) {
+        const hit = this.ctx.terrain.pushOut(e.x, e.y, e.radius, this.blockOut);
+        if (hit) {
+          e.x = this.blockOut.x;
+          e.y = this.blockOut.y;
+          if (vx * hit.nx + vy * hit.ny < 0) {
+            let tx = -hit.ny;
+            let ty = hit.nx;
+            const side = (e.x - hit.cx) * tx + (e.y - hit.cy) * ty;
+            if (side < 0 || (side === 0 && e.id % 2)) {
+              tx = -tx;
+              ty = -ty;
+            }
+            const step = Math.hypot(vx, vy) * speedMul * dt;
+            e.x += tx * step;
+            e.y += ty * step;
           }
         }
       }

@@ -8,6 +8,7 @@ import type { HitboxSystem } from './hitboxes';
 import type { PickupSystem } from './pickups';
 import type { FxSystem } from './fx';
 import type { HazardSystem } from './hazards';
+import type { TerrainSystem } from './terrain';
 import type { InputController } from '../input';
 
 export interface PlayerState {
@@ -50,6 +51,8 @@ export interface RunContext {
   readonly pickups: PickupSystem;
   readonly fx: FxSystem;
   readonly hazards: HazardSystem;
+  /** Ground terrain and the stage's solid blocks. */
+  readonly terrain: TerrainSystem;
   /** Seconds of run time (pauses don't advance it). */
   readonly runTime: number;
 

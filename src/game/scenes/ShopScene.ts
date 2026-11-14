@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import { SHOP, type ShopUpgradeDef } from '../../data';
-import { buyShop, shopCost, shopLevel } from '../../core/meta';
+import { buyShop, resetShop, shopCost, shopLevel, shopSpent } from '../../core/meta';
 import type { MenuHost } from '../menus';
-import { backdrop, C, CSS, display, inkPanel, label, medallion, screenChrome } from '../ui';
+import { backdrop, Button, C, CSS, display, inkPanel, label, medallion, screenChrome } from '../ui';
 import { centerCamera, relayoutOnResize } from '../layout';
 import { TEX } from '../textures';
 
@@ -39,6 +39,8 @@ export class ShopScene extends Phaser.Scene {
   private layer!: Phaser.GameObjects.Container;
   private berriesText!: Phaser.GameObjects.Text;
   private openedAt = 0;
+  /** Reset all was pressed once; the next press refunds everything. */
+  private resetArmed = false;
   private padPrev = { l: true, r: true, u: true, dn: true, a: true, b: true };
 
   constructor() {
@@ -50,6 +52,7 @@ export class ShopScene extends Phaser.Scene {
     this.tab = Phaser.Math.Clamp(d.tab ?? 0, 0, TABS.length - 1);
     this.sel = 0;
     this.inGrid = false;
+    this.resetArmed = false;
     this.padPrev = { l: true, r: true, u: true, dn: true, a: true, b: true };
   }
 
@@ -60,7 +63,7 @@ export class ShopScene extends Phaser.Scene {
     backdrop(this, box.w, box.h, 0.92)
       .setPosition(box.left, box.top)
       .setInteractive(new Phaser.Geom.Rectangle(0, 0, box.w, box.h), Phaser.Geom.Rectangle.Contains);
-    this.berriesText = screenChrome(this, box, 'SHIPWRIGHT', [['↑↓←→', 'Select'], ['Enter', 'Buy'], ['Esc', 'Back']]);
+    this.berriesText = screenChrome(this, box, 'SHIPWRIGHT', [['↑↓←→', 'Select'], ['Enter', 'Buy'], ['R', 'Reset all'], ['Esc', 'Back']]);
     this.layer = this.add.container(0, 0);
 
     this.input.keyboard!.on('keydown', (ev: KeyboardEvent) => {
@@ -70,6 +73,7 @@ export class ShopScene extends Phaser.Scene {
       else if (k === 'ArrowUp' || k === 'KeyW') this.nav(0, -1);
       else if (k === 'ArrowDown' || k === 'KeyS') this.nav(0, 1);
       else if (k === 'Enter' || k === 'Space' || k === 'KeyZ' || k === 'KeyE') this.confirm();
+      else if (k === 'KeyR') this.resetAll();
       else if (k === 'Escape' || k === 'KeyX' || k === 'Backspace') this.back();
     });
     this.render();
@@ -100,6 +104,7 @@ export class ShopScene extends Phaser.Scene {
 
   /** Tabs: ↑↓ switch tab, → enters the grid. Grid: arrows move, ← from column 0 returns to the tabs. */
   private nav(dx: number, dy: number): void {
+    this.resetArmed = false;
     if (!this.inGrid) {
       if (dy) {
         this.tab = (this.tab + dy + TABS.length) % TABS.length;
@@ -136,10 +141,29 @@ export class ShopScene extends Phaser.Scene {
     }
     this.d.host.persist();
     this.render();
-    this.cameras.main.flash(90, 255, 230, 140);
+  }
+
+  /** Refund every purchase. Needs two presses so it can't happen by accident. */
+  private resetAll(): void {
+    const save = this.d.host.save;
+    if (!shopSpent(save)) {
+      this.cameras.main.shake(120, 0.004);
+      return;
+    }
+    if (this.resetArmed) {
+      resetShop(save);
+      this.resetArmed = false;
+      this.d.host.persist();
+    } else this.resetArmed = true;
+    this.render();
   }
 
   private back(): void {
+    if (this.resetArmed) {
+      this.resetArmed = false;
+      this.render();
+      return;
+    }
     if (this.inGrid) {
       this.inGrid = false;
       this.render();
@@ -190,6 +214,15 @@ export class ShopScene extends Phaser.Scene {
       });
       this.layer.add([name, icon, zone]);
     });
+
+    // Reset all, under the tabs.
+    const spent = shopSpent(this.d.host.save);
+    const ry = TAB.y + fh + 40;
+    const reset = new Button(this, TAB.x + TAB.w / 2, ry, TAB.w, 54, this.resetArmed ? 'Confirm reset' : 'Reset all', () => this.resetAll(), 'red').setEnabled(spent > 0);
+    const note = this.resetArmed
+      ? `Refund ฿${spent.toLocaleString('en-US')} and remove\nevery upgrade? Esc to cancel.`
+      : spent > 0 ? `Refunds all ฿${spent.toLocaleString('en-US')} spent.` : 'Nothing bought yet.';
+    this.layer.add([reset, label(this, TAB.x + TAB.w / 2, ry + 40, note, 15, { weight: 500, color: this.resetArmed ? '#ff8a80' : '#cfe3f2', style: { align: 'center' } }).setOrigin(0.5, 0)]);
   }
 
   private drawGrid(): void {

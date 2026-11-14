@@ -10,7 +10,7 @@ import { WaveDirector, type SpawnRequest } from '../../core/waveDirector';
 import { xpToNext, type RunSummary } from '../../core/progression';
 import { loadSave, writeSave, type SaveData } from '../../core/save';
 import { applyRun, hakiModifiers, metaCounts, rankFor, RANK_BONUS, rollHakiFragment, shopLevel, type RunOutcome } from '../../core/meta';
-import { DEPTH, PLAYER_BASE_SPEED, PLAYER_IFRAMES, WORLD_ZOOM, hex, readUrlFlags, viewport, RES } from '../../config';
+import { DEPTH, PLAYER_BASE_SPEED, PLAYER_IFRAMES, PLAYER_RADIUS, WORLD_ZOOM, hex, readUrlFlags, viewport, RES } from '../../config';
 import { InputController } from '../input';
 import type { ActionSource, PlayerState, RunContext } from '../run/context';
 import { EnemySystem, type Enemy } from '../run/enemies';
@@ -120,6 +120,7 @@ export class RunScene extends Phaser.Scene implements RunContext {
   private ground!: Phaser.GameObjects.TileSprite;
   private boostAtk = 0;
   private nearestDir = { x: 0, y: 0 };
+  private readonly blockOut = { x: 0, y: 0 };
   private aimOut = { x: 1, y: 0 };
   private buffs = new Map<string, { t: number; invuln: boolean }>();
   private scheduled: { t: number; fn: () => void }[] = [];
@@ -195,7 +196,7 @@ export class RunScene extends Phaser.Scene implements RunContext {
     const onResize = () => this.fitViewport();
     this.scale.on('resize', onResize);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off('resize', onResize));
-    this.terrain = new TerrainSystem(this, this.stage.terrain);
+    this.terrain = new TerrainSystem(this, this.stage.terrain, this.stage.obstacles);
 
     this.player = {
       x: 0, y: 0, hp: this.stats.get('maxHp'), iframes: 0, scale: 1, facing: 1, shield: 0, shieldDelay: 0, revives: 0,
@@ -555,6 +556,10 @@ export class RunScene extends Phaser.Scene implements RunContext {
       p.x += mx * speed * dt;
       p.y += my * speed * dt;
     }
+    if (this.terrain.pushOut(p.x, p.y, PLAYER_RADIUS * p.scale, this.blockOut)) {
+      p.x = this.blockOut.x; // blocks: slide along their edges
+      p.y = this.blockOut.y;
+    }
     if (mx !== 0) p.facing = mx < 0 ? -1 : 1;
     if (p.iframes > 0) p.iframes -= dt;
 
@@ -818,6 +823,8 @@ export class RunScene extends Phaser.Scene implements RunContext {
     this.syncChoice(c);
     this.choices = [];
     this.state = 'playing';
+    // Chain queued level-ups in place: closing the overlay for a frame and fading it back in blinks the screen.
+    if (this.pendingLevelUps > 0) this.openLevelUp();
   }
 
   reroll(): void {

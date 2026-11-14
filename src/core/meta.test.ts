@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyRun, buyShop, DUPE_XP, equipHaki, gachaPool, hakiModifiers, isStageOpen, isUnlocked, metaCounts, pullCrew, rankFor, setUnlockAll, shopCost } from './meta';
+import { applyRun, buyShop, DUPE_XP, equipHaki, gachaPool, hakiModifiers, isStageOpen, isUnlocked, metaCounts, pullCrew, rankFor, resetShop, setUnlockAll, shopCost } from './meta';
 import { Rng } from './rng';
 import { computeBounty, xpToNext, type RunSummary } from './progression';
 import { chooseSave, emptySave, exportSave, importSave, loadSave, migrate, useSaveStore, writeSave, type KeyValueStore } from './save';
@@ -97,6 +97,17 @@ describe('meta', () => {
     s.berries = 1e9;
     expect(buyShop(s, 'revive')).toBe(false);
     expect(metaCounts(s).revives).toBe(1);
+  });
+
+  it('reset refunds every shop purchase in full', () => {
+    const s = emptySave();
+    s.berries = 1e6;
+    for (const def of SHOP.values()) while (buyShop(s, def.id) && s.shop[def.id] < 3);
+    const spent = 1e6 - s.berries;
+    expect(spent).toBeGreaterThan(0);
+    expect(resetShop(s)).toBe(spent);
+    expect(s.berries).toBe(1e6);
+    expect(metaCounts(s)).toEqual({ rerolls: 0, holds: 0, eliminates: 0, revives: 0 });
   });
 
   it('recruits through the crew gacha; dupes give rank XP; achievement unlocks are never pulled', () => {
