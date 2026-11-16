@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
 import { RES } from '../config';
 
-export type AimMode = 'mouse' | 'auto';
+/** move: where you last walked (default); mouse: at the cursor (left click toggles); auto: nearest enemy (C toggles, touch default). */
+export type AimMode = 'move' | 'mouse' | 'auto';
 
 /**
  * Unifies keyboard + mouse, gamepad and touch into one per-frame snapshot.
- * Edge-triggered actions (special, pause, toggleAim) are true for one frame.
+ * Edge-triggered actions (special, pause) are true for one frame.
  */
 export class InputController {
   readonly move = { x: 0, y: 0 };
@@ -30,16 +31,18 @@ export class InputController {
 
   private readonly scene: Phaser.Scene;
   private readonly keys: Record<string, Phaser.Input.Keyboard.Key>;
-  private mouseUsed = false;
+  /** Whether a left click may switch aim modes right now (false while menus are up). */
+  private readonly canToggleAim: () => boolean;
   private stickPointerId = -1;
   private queuedSpecial = false;
   private queuedPause = false;
   private padPrev = { special: false, pause: false };
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, canToggleAim: () => boolean = () => true) {
     this.scene = scene;
+    this.canToggleAim = canToggleAim;
     this.isTouch = scene.sys.game.device.input.touch && !scene.sys.game.device.os.desktop;
-    this.aimMode = this.isTouch ? 'auto' : 'mouse';
+    this.aimMode = this.isTouch ? 'auto' : 'move';
     const kb = scene.input.keyboard!;
     this.keys = kb.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SHIFT,SPACE,ESC,P,C') as Record<string, Phaser.Input.Keyboard.Key>;
     scene.input.mouse?.disableContextMenu();
@@ -47,14 +50,12 @@ export class InputController {
     kb.on('keydown-SPACE', () => (this.queuedSpecial = true));
     kb.on('keydown-ESC', () => (this.queuedPause = true));
     kb.on('keydown-P', () => (this.queuedPause = true));
-    kb.on('keydown-C', () => (this.aimMode = this.aimMode === 'mouse' ? 'auto' : 'mouse'));
+    kb.on('keydown-C', () => (this.aimMode = this.aimMode === 'auto' ? 'move' : 'auto'));
 
-    scene.input.on('pointermove', (p: Phaser.Input.Pointer) => {
-      if (!p.wasTouch) this.mouseUsed = true;
-    });
     scene.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
       if (!p.wasTouch) {
         if (p.rightButtonDown()) this.queuedSpecial = true;
+        else if (p.leftButtonDown() && this.canToggleAim()) this.aimMode = this.aimMode === 'mouse' ? 'move' : 'mouse';
         return;
       }
       const s = this.touchSpecial();
@@ -150,12 +151,12 @@ export class InputController {
     if (stickAim) {
       ax = stickAim.x;
       ay = stickAim.y;
-    } else if (this.aimMode === 'mouse' && this.mouseUsed) {
+    } else if (this.aimMode === 'mouse') {
       const cam = this.scene.cameras.main;
       const wp = cam.getWorldPoint(this.scene.input.activePointer.x, this.scene.input.activePointer.y);
       ax = wp.x - px;
       ay = wp.y - py;
-    } else if (nearest) {
+    } else if (this.aimMode === 'auto' && nearest) {
       ax = nearest.x;
       ay = nearest.y;
     } else if (mlen > 0.1) {

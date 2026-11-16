@@ -137,19 +137,20 @@ export class Loadout {
     return picked;
   }
 
-  /** Random upgrades for a treasure chest (applied directly, no boosts unless nothing is left). */
-  rollChest(pools: LoadoutPools, rng: Rng, count: number): Choice[] {
-    const out: Choice[] = [];
-    for (let i = 0; i < count; i++) {
-      // Chests favour upgrading what you own, like HoloCure.
-      const pool = this.candidates(pools);
-      const owned = pool.filter((c) => c.level > 1 || c.kind === 'mainAttack');
-      const from = owned.length && rng.chance(0.75) ? owned : pool;
-      const c = from.length ? from[Math.floor(rng.next() * from.length)] : ({ kind: 'boost', id: 'berries', level: 0 } as Choice);
-      this.apply(c);
-      out.push(c);
-    }
-    return out;
+  /**
+   * One treasure-chest reward, not applied: the player accepts or passes it. `offered` are
+   * this chest's earlier rewards: not offered again unless nothing else is left (then a passed
+   * reward can come back). A boost only when there are no upgrades at all.
+   */
+  rollChestReward(pools: LoadoutPools, rng: Rng, offered: readonly Choice[] = []): Choice {
+    const seen = new Set(offered.map(choiceKey));
+    const all = this.candidates(pools);
+    const fresh = all.filter((c) => !seen.has(choiceKey(c)));
+    const pool = fresh.length ? fresh : all; // nothing new left: a passed reward may come back
+    // Chests favour upgrading what you own, like HoloCure.
+    const owned = pool.filter((c) => c.level > 1 || c.kind === 'mainAttack');
+    const from = owned.length && rng.chance(0.75) ? owned : pool;
+    return from.length ? from[Math.floor(rng.next() * from.length)] : { kind: 'boost', id: 'berries', level: 0 };
   }
 
   /** Alliances whose two components are both at max level. */

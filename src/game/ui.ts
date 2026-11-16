@@ -281,16 +281,31 @@ export function hintRow(scene: Phaser.Scene, x: number, y: number, hints: [strin
 
 export type ButtonVariant = 'gold' | 'red' | 'sea' | 'parch';
 
-const VARIANT: Record<ButtonVariant, { fill: number; hover: number; text: string; stroke: boolean }> = {
-  gold: { fill: C.gold, hover: C.goldLight, text: CSS.ink, stroke: false },
-  red: { fill: C.red, hover: 0xff5a62, text: CSS.white, stroke: true },
-  sea: { fill: C.seaMid, hover: 0x2d8ccc, text: CSS.white, stroke: true },
-  parch: { fill: C.parch, hover: C.parchLight, text: CSS.ink, stroke: false },
+/** Plank woods: gold = honey oak, red = red-painted, sea = blue-painted, parch = pale birch. */
+const VARIANT: Record<ButtonVariant, { fill: number; text: string; stroke: boolean }> = {
+  gold: { fill: 0xd9a04a, text: CSS.ink, stroke: false },
+  red: { fill: 0xb5372c, text: CSS.white, stroke: true },
+  sea: { fill: 0x2f6a8c, text: CSS.white, stroke: true },
+  parch: { fill: 0xe6cc96, text: CSS.ink, stroke: false },
 };
 
+/** Multiply a colour's channels by f (darker < 1 < lighter). */
+const tone = (c: number, f: number): number => {
+  const ch = (s: number) => Math.max(0, Math.min(255, Math.round(((c >> s) & 255) * f)));
+  return (ch(16) << 16) | (ch(8) << 8) | ch(0);
+};
+
+/** A plank outline with two chipped corners. */
+function plankPoints(x: number, y: number, w: number, h: number): Pt[] {
+  return [
+    { x: x + 4, y }, { x: x + w, y }, { x: x + w, y: y + h - 5 }, { x: x + w - 5, y: y + h },
+    { x, y: y + h }, { x, y: y + 4 },
+  ];
+}
+
 /**
- * Slanted pirate button with hover lift, press squash, keyboard focus glow and an
- * optional count badge (Reroll ×2).
+ * Wooden plank button (grain, knot, a nail at each end) with hover lift, press squash,
+ * keyboard focus glow and an optional count badge (Reroll ×2).
  */
 export class Button extends Phaser.GameObjects.Container {
   private readonly g: Phaser.GameObjects.Graphics;
@@ -339,6 +354,7 @@ export class Button extends Phaser.GameObjects.Container {
 
   setLabel(value: string): this {
     this.text.setText(value);
+    this.redraw(); // nails depend on the label width
     return this;
   }
 
@@ -372,16 +388,38 @@ export class Button extends Phaser.GameObjects.Container {
     const w = this.bw;
     const h = this.bh;
     const lift = this.enabled && (this.hovered || this.focused) && !this.pressed ? -2 : this.pressed ? 2 : 0;
-    const skew = h * 0.35;
     g.clear();
     const x = -w / 2;
     const y = -h / 2 + lift;
-    g.fillStyle(C.ink).fillPoints(slantPoints(x + 5, -h / 2 + 5, w, h, skew), true);
-    const fill = !this.enabled ? 0x6b6258 : this.hovered || this.focused ? v.hover : v.fill;
-    g.fillStyle(fill).fillPoints(slantPoints(x, y, w, h, skew), true);
-    g.fillStyle(0xffffff, 0.22).fillPoints(slantPoints(x + skew * 0.3, y + 3, w - skew * 0.6, h * 0.3, skew * 0.3), true);
-    g.lineStyle(3, C.ink).strokePoints(slantPoints(x, y, w, h, skew), true, true);
-    if (this.focused && this.enabled) g.lineStyle(3, 0xffffff, 0.9).strokePoints(slantPoints(x - 5, y - 5, w + 10, h + 10, skew), true, true);
+    const base = !this.enabled ? 0x6b6258 : this.hovered || this.focused ? tone(v.fill, 1.14) : v.fill;
+    const plank = plankPoints(x, y, w, h);
+    g.fillStyle(C.ink).fillPoints(plankPoints(x + 5, -h / 2 + 5, w, h), true);
+    g.fillStyle(base).fillPoints(plank, true);
+    // Plank edges: lit top, shaded underside.
+    g.fillStyle(0xffffff, 0.22).fillRect(x + 5, y + 3, w - 10, 2);
+    g.fillStyle(tone(base, 0.72)).fillRect(x + 2, y + h - 6, w - 7, 4);
+    // Grain: a few wavy lines, plus a knot; seeded by size so each button keeps its pattern.
+    const seed = (w * 7 + h * 13) % 17;
+    g.lineStyle(1.6, tone(base, 0.6), 0.75);
+    for (let i = 0; i < 3; i++) {
+      const gy = y + h * (0.24 + 0.2 * i);
+      const pts: Pt[] = [];
+      for (let gx = x + 6; gx <= x + w - 6; gx += 10) pts.push({ x: gx, y: gy + Math.sin(gx * 0.045 + seed + i * 2.1) * 1.4 });
+      g.strokePoints(pts, false, false);
+    }
+    const kx = x + w * (0.2 + (seed % 5) * 0.12);
+    g.lineStyle(1.6, tone(base, 0.5), 0.8).strokeEllipse(kx, y + h * 0.62, 12, 6);
+    g.fillStyle(tone(base, 0.5), 0.8).fillEllipse(kx, y + h * 0.62, 4, 2);
+    // Nails, only where they clear the label.
+    if (this.text.width + 2 * 22 <= w) {
+      for (const nx of [x + 11, x + w - 11]) {
+        g.fillStyle(C.ink).fillCircle(nx, y + h / 2, 4);
+        g.fillStyle(0x9aa3ab).fillCircle(nx, y + h / 2, 2.8);
+        g.fillStyle(0xffffff, 0.75).fillCircle(nx - 1, y + h / 2 - 1, 1);
+      }
+    }
+    g.lineStyle(3, C.ink).strokePoints(plank, true, true);
+    if (this.focused && this.enabled) g.lineStyle(3, 0xffffff, 0.9).strokePoints(plankPoints(x - 5, y - 5, w + 10, h + 10), true, true);
     this.text.setY(lift - 1).setAlpha(this.enabled ? 1 : 0.6);
     if (this.badge) {
       const bx = w / 2 - 6;

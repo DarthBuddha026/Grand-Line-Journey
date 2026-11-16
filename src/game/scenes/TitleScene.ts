@@ -89,7 +89,7 @@ export class TitleScene extends Phaser.Scene implements MenuHost {
     for (let y = top + 70; y < box.bottom; y += 24) deck.lineBetween(box.left, y, box.right, y);
     for (let x = box.left + 40; x < box.right; x += 160) deck.lineBetween(x, top + 48, x, box.bottom);
 
-    const crew = [...CHARACTERS.values()].filter((c) => isUnlocked(save, c.id));
+    const crew = [...CHARACTERS.values()].filter((c) => c.crew === 'straw_hat' && isUnlocked(save, c.id)); // the deck is the Straw Hats' ship
     const fit = Math.max(3, Math.floor((span - 120) / 112));
     const shown = crew.slice(0, Math.min(fit, 13));
     const feet = top + 124;

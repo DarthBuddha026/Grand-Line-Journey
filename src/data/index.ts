@@ -11,7 +11,7 @@ import shellsTown from './stages/shells_town.json';
 import alabasta from './stages/alabasta.json';
 import eniesLobby from './stages/enies_lobby.json';
 import impelDown from './stages/impel_down.json';
-import { expandCumulative } from '../core/merge';
+import { deepMerge, expandCumulative } from '../core/merge';
 import type { ModKey, RunModPatch, StatKey, StatModifier } from '../core/stats';
 import type {
   AchievementDef, ActionDef, ActionType, CharacterDef, EnemyDef, HakiDef, ItemDef, ShopUpgradeDef, SkillDef, StageDef, WeaponDef, WeaponLevel,
@@ -52,6 +52,14 @@ interface MainAttackSource {
   color: string;
   cooldown: number;
   action: ActionDef;
+  /** A character's own awakening, replacing the generic one: merged over level 7 after its damage boost. */
+  awaken?: AwakenSpecial;
+}
+
+interface AwakenSpecial {
+  name: string;
+  desc: string;
+  action: Partial<ActionDef>;
 }
 
 const SIZE_KEYS = ['range', 'size', 'radius', 'length', 'width'] as const;
@@ -81,6 +89,37 @@ export function growMainAttack(src: MainAttackSource): WeaponDef {
   const l6 = lv(l5, '+25% damage, bigger.', 1.25, 1.1);
   const l7 = hasCount ? lv(l6, `Max: +1 ${unit}, +15% damage.`, 1.15, 1, 1) : lv(l6, 'Max: +30% damage.', 1.3);
   return { id: src.id, name: src.name, desc: src.desc, color: src.color, levels: [l1, l2, l3, l4, l5, l6, l7] };
+}
+
+// ---- Awakening: the max level (7) of every main attack and weapon -------------
+
+/** On top of level 7's own upgrade, an awakened attack hits much harder, grows, fires faster and gets +1 shot. */
+export const AWAKEN = { dmg: 1.6, size: 1.2, cooldown: 0.85, count: 1 } as const;
+
+function awakenAction(a: ActionDef, count: number): ActionDef {
+  const out = scaleAction(a, AWAKEN.dmg, AWAKEN.size, count);
+  if (out.action) out.action = awakenAction(out.action, 0);
+  if (out.trail) out.trail = awakenAction(out.trail, 0);
+  if (out.actions) out.actions = out.actions.map((s) => awakenAction(s, 0));
+  return out;
+}
+
+export function awaken(w: WeaponDef, special?: AwakenSpecial): WeaponDef {
+  if (w.recipe) return w; // Alliances are single-level fusions, already beyond max
+  const levels = [...w.levels];
+  const last = levels[levels.length - 1];
+  if (special) {
+    const cooldown = round(last.cooldown * AWAKEN.cooldown * 100) / 100;
+    levels[levels.length - 1] = { desc: special.desc, cooldown, action: deepMerge(awakenAction(last.action, 0), special.action) };
+    return { ...w, awakenName: special.name, levels };
+  }
+  const extra = last.action.count !== undefined ? ', +1 shot' : '';
+  levels[levels.length - 1] = {
+    desc: `${last.desc.replace(/^Max:\s*/, '')} Awakens: ×1.6 damage, bigger, faster${extra}.`,
+    cooldown: round(last.cooldown * AWAKEN.cooldown * 100) / 100,
+    action: awakenAction(last.action, AWAKEN.count),
+  };
+  return { ...w, levels };
 }
 
 // ---- Items: linear per-level scaling with auto-generated descriptions ------
@@ -157,9 +196,9 @@ export function expandItem(src: ItemSource): ItemDef {
 // ---- Registries -------------------------------------------------------------
 
 export const CHARACTERS = byId(charactersJson as unknown as CharacterDef[], 'character');
-export const MAIN_ATTACKS = byId((mainAttacksJson as unknown as MainAttackSource[]).map(growMainAttack), 'main attack');
+export const MAIN_ATTACKS = byId((mainAttacksJson as unknown as MainAttackSource[]).map((m) => awaken(growMainAttack(m), m.awaken)), 'main attack');
 export const WEAPONS = byId(
-  (weaponsJson as unknown as (Omit<WeaponDef, 'levels'> & { levels: unknown[] })[]).map((w) => ({ ...w, levels: expandCumulative<WeaponLevel>(w.levels) })),
+  (weaponsJson as unknown as (Omit<WeaponDef, 'levels'> & { levels: unknown[] })[]).map((w) => awaken({ ...w, levels: expandCumulative<WeaponLevel>(w.levels) })),
   'weapon',
 );
 export const ITEMS = byId((itemsJson as unknown as ItemSource[]).map(expandItem), 'item');

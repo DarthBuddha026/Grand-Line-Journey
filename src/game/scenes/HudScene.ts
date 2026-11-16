@@ -394,7 +394,7 @@ export class HudScene extends Phaser.Scene {
     const run = this.run;
     const want: Overlay | null = run.state === 'playing' || run.state === 'ended' ? null : run.state;
     const version =
-      want === 'levelup' ? `${run.choices.map((c) => `${c.kind}${c.id}${c.level}`).join()}|${run.rerolls}${run.holds}${run.eliminates}|${run.loadout.held?.id}` : '';
+      want === 'levelup' ? `${run.choices.map((c) => `${c.kind}${c.id}${c.level}`).join()}|${run.rerolls}${run.holds}${run.eliminates}|${run.loadout.held?.id}` : want === 'chest' ? String(run.chestTaken.length) : '';
     if (want === this.overlayFor && version === this.overlayVersion) return;
     const sameKind = want === this.overlayFor;
     this.overlay.removeAll(true);
@@ -413,7 +413,7 @@ export class HudScene extends Phaser.Scene {
     this.overlay.setVisible(true);
     this.overlay.add(backdrop(this, this.scale.width / RES, this.scale.height / RES, want === 'paused' ? 0.8 : 0.72).setPosition(-this.overlay.x, -this.overlay.y));
     if (want === 'levelup') this.buildLevelUp(sameKind);
-    else if (want === 'chest') this.buildChest();
+    else if (want === 'chest') this.buildChest(sameKind);
     else if (want === 'anvil') this.buildAnvil();
     else if (want === 'cleared') this.buildCleared();
     else this.buildPause();
@@ -500,10 +500,10 @@ export class HudScene extends Phaser.Scene {
     }
     parts.push(label(this, 0, descY, info.desc, 14, { onDark: false, weight: 500, color: '#3a2a20', style: { align: 'center', wordWrap: { width: w - 30 }, lineSpacing: 3 } }).setOrigin(0.5, 0));
     parts.push(keycap(this, 0, h / 2 - 22, String(index + 1), 13));
-    if (info.isNew) {
+    if (info.isNew || info.awakened) {
       const sticker = this.add.graphics();
-      burst(sticker, w / 2 - 14, y + 10, 30, 12, C.red, 0.2);
-      parts.push(sticker, display(this, w / 2 - 14, y + 10, 'NEW!', 14, { shadow: null }).setOrigin(0.5).setRotation(0.25));
+      burst(sticker, w / 2 - 14, y + 10, info.awakened ? 38 : 30, 12, info.awakened ? C.gold : C.red, 0.2);
+      parts.push(sticker, display(this, w / 2 - 14, y + 10, info.awakened ? 'AWAKEN!' : 'NEW!', info.awakened ? 12 : 14, { shadow: null, ...(info.awakened ? { color: CSS.red } : {}) }).setOrigin(0.5).setRotation(0.25));
     }
     if (held) {
       const stamp = display(this, 0, y + 100, 'HELD', 30, { color: CSS.red, stroke: CSS.parch, shadow: null }).setOrigin(0.5).setRotation(-0.3).setAlpha(0.9);
@@ -532,35 +532,57 @@ export class HudScene extends Phaser.Scene {
     return sel;
   }
 
-  private buildChest(): void {
+  /** Treasure: rewards are revealed one at a time; the current one has Accept / Pass, later ones are face down. */
+  private buildChest(rebuilt: boolean): void {
     const run = this.run;
-    this.bigTitle(96, 'TREASURE!', 58);
+    if (!rebuilt) this.bigTitle(96, 'TREASURE!', 58);
+    else {
+      this.overlay.add(gradientFill(display(this, GAME_W / 2, 96, 'TREASURE!', 58, { shadow: CSS.red }).setOrigin(0.5), '#fff6b0', '#ffb300').setRotation(-0.05));
+      this.overlayOpenedAt = this.time.now; // a held key mustn't decide the next reward too
+      this.selected = 0;
+    }
     const g = this.add.graphics();
     this.overlay.add(g);
     medallion(g, GAME_W / 2, 186, 38, C.wood);
     this.overlay.add(this.add.image(GAME_W / 2, 186, 'ic_chest').setScale(0.9 / TEX));
-    run.chestResults.forEach((c, i) => {
-      const info = run.describe(c);
-      const y = 250 + i * 96;
-      const row = this.add.container(GAME_W / 2, y + 40);
+    const cur = run.chestTaken.length;
+    for (let i = 0; i < run.chestTotal; i++) {
+      const y = 250 + i * 96 + 40;
+      const row = this.add.container(GAME_W / 2, y);
       const rg = this.add.graphics();
       parchment(rg, -320, -40, 640, 82, i + 11, { shadow: 6 });
-      medallion(rg, -262, 0, 28, info.color);
-      ribbon(rg, 170, -28, 130, 24, KIND[c.kind].color, { tails: false, shadow: 3 });
-      row.add([
-        rg,
-        this.add.image(-262, 0, info.icon).setScale(0.62 / TEX),
-        label(this, 235, -16, c.kind === 'boost' ? 'Boost' : `${KIND[c.kind].label} Lv ${c.level}`, 13).setOrigin(0.5),
-        label(this, -216, -18, info.name, 19, { onDark: false, color: CSS.ink }),
-        label(this, -216, 8, info.desc, 13, { onDark: false, weight: 500, color: '#3a2a20', style: { wordWrap: { width: 500 } } }),
-      ]);
-      row.setAlpha(0).setScale(0.6);
-      this.tweens.add({ targets: row, alpha: 1, scale: 1, duration: 260, delay: 120 + i * 160, ease: 'Back.Out' });
+      row.add(rg);
       this.overlay.add(row);
-    });
-    const btn = new Button(this, GAME_W / 2, 620, 280, 56, 'Collect', () => run.closeChest(), 'gold');
-    this.overlay.add(btn);
-    this.selectables.push({ root: btn, setOn: (on) => btn.setFocus(on) });
+      const c = run.chestResults[i];
+      if (i > cur || !c) {
+        // Not revealed yet.
+        row.add(display(this, 0, 0, '?', 40, { color: CSS.inkSoft, shadow: null }).setOrigin(0.5)).setAlpha(0.55);
+        continue;
+      }
+      const info = run.describe(c);
+      medallion(rg, -262, 0, 28, info.color);
+      row.add([
+        this.add.image(-262, 0, info.icon).setScale(0.62 / TEX),
+        label(this, -216, -30, c.kind === 'boost' ? 'Boost' : `${KIND[c.kind].label} · Lv ${c.level}`, 12, { onDark: false, color: Phaser.Display.Color.IntegerToColor(KIND[c.kind].color).rgba }).setOrigin(0, 0.5),
+        label(this, -216, -12, info.name, 18, { onDark: false, color: CSS.ink }).setOrigin(0, 0.5),
+        label(this, -216, 4, info.desc, 13, { onDark: false, weight: 500, color: '#3a2a20', style: { wordWrap: { width: 330 } } }),
+      ]);
+      if (i < cur) {
+        // Decided: stamp it.
+        const took = run.chestTaken[i];
+        row.add(display(this, 200, 0, took ? 'TAKEN' : 'PASSED', 26, { color: took ? '#2e7d32' : '#8a7a6a', stroke: CSS.parch, shadow: null }).setOrigin(0.5).setRotation(-0.12));
+        if (!took) row.setAlpha(0.6);
+        continue;
+      }
+      // On offer: Accept / Pass.
+      const accept = new Button(this, GAME_W / 2 + 172, y, 116, 46, 'Accept', () => this.pick(0), 'gold');
+      const pass = new Button(this, GAME_W / 2 + 268, y, 76, 46, 'Pass', () => this.pick(1), 'sea');
+      this.overlay.add([accept, pass]);
+      this.selectables.push({ root: accept, setOn: (on) => accept.setFocus(on) }, { root: pass, setOn: (on) => pass.setFocus(on) });
+      row.setAlpha(0).setScale(0.6);
+      this.tweens.add({ targets: row, alpha: 1, scale: 1, duration: 260, delay: rebuilt ? 0 : 120, ease: 'Back.Out' });
+    }
+    this.overlay.add(hintRow(this, GAME_W / 2, 612, [['1', 'Accept'], ['2', 'Pass'], ['←→', 'Choose'], ['Enter', 'Confirm']], CSS.white));
   }
 
   private buildAnvil(): void {
@@ -661,7 +683,7 @@ export class HudScene extends Phaser.Scene {
     });
     const notes = [
       `Haki: ${haki.length ? haki.join(', ') : 'none equipped'}`,
-      `Aim: ${run.controls.aimMode === 'mouse' ? 'mouse' : 'auto (nearest enemy)'} — press C to switch`,
+      `Aim: ${{ move: 'where you walk', mouse: 'mouse cursor', auto: 'nearest enemy' }[run.controls.aimMode]}. Left click: mouse aim on/off. C: auto aim on/off.`,
       run.character.devilFruit ? 'Devil Fruit user: seawater drains your power.' : 'Not a Devil Fruit user: seawater gives you a boost.',
     ];
     this.overlay.add(label(this, 680, 372, notes.join('\n'), 14, { onDark: false, weight: 500, color: '#3a2a20', style: { wordWrap: { width: 410 }, lineSpacing: 6 } }));
@@ -696,7 +718,7 @@ export class HudScene extends Phaser.Scene {
         run.chooseAnvil(i);
         break;
       case 'chest':
-        run.closeChest();
+        run.chestDecide(i === 0);
         break;
       case 'cleared':
         if (i === 0) run.continueEndless();
@@ -714,7 +736,7 @@ export class HudScene extends Phaser.Scene {
     const run = this.run;
     const f = this.overlayFor;
     if (!f) return;
-    if (code.startsWith('Digit') && (f === 'levelup' || f === 'anvil')) {
+    if (code.startsWith('Digit') && (f === 'levelup' || f === 'anvil' || f === 'chest')) {
       const n = Number(code.slice(5)) - 1;
       if (n >= 0 && n < this.selectables.length) this.pick(n);
       return;
@@ -744,6 +766,7 @@ export class HudScene extends Phaser.Scene {
     if (b && !this.padPrev.b) {
       if (this.overlayFor === 'anvil') this.run.skipAnvil();
       else if (this.overlayFor === 'levelup') this.run.reroll();
+      else if (this.overlayFor === 'chest') this.pick(1);
     }
     this.padPrev = { left, right, a, b };
   }

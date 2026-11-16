@@ -113,15 +113,34 @@ export function executeAction(ctx: RunContext, a: ActionDef, src: ActionSource):
   const kb = (a.knockback ?? 0) * (1 + ctx.mods.get('knockbackMul'));
 
   switch (a.type) {
-    case 'punch':
-      fan(ctx.aimDir(), count, a.spread ?? 18, (dx, dy) => {
+    case 'punch': {
+      // Fists stretch an arm from the hand (texture 'arm'); other tips (blades) keep a plain streak.
+      const arm = a.texture ? 'white' : 'arm';
+      const aim = ctx.aimDir();
+      if (arm === 'arm' && Math.abs(aim.x) > 0.15) p.facing = aim.x < 0 ? -1 : 1; // punch with the front hand
+      if (a.bounce) {
+        // Bouncing arms (Gear Fourth): one per free hand, at most two; a hand punches again once its fist is back.
+        const free = Math.min(count, 2) - ctx.hitboxes.fistsOut();
+        if (free <= 0) break;
+        fan(aim, free, a.spread ?? 18, (dx, dy) => {
+          const hand = ctx.hitboxes.freeHand();
+          ctx.hitboxes.spawn({
+            motion: 'fist', x: ctx.hitboxes.handX(hand), y: ctx.hitboxes.handY(), hand, dirX: dx, dirY: dy, speed: a.speed ?? 480, reach: (a.range ?? 80) * area * scale,
+            radius: (a.size ?? 6) * area * scale, life: 8, dmg, knockback: kb || 60, effects: a.effects, color,
+            texture: arm, tipTexture: a.texture ?? 'fist', bounce: a.bounce,
+          });
+        });
+        break;
+      }
+      fan(aim, count, a.spread ?? 18, (dx, dy, i) => {
         ctx.hitboxes.spawn({
-          motion: 'punch', x: p.x, y: p.y, dirX: dx, dirY: dy,
+          motion: 'punch', x: p.x, y: p.y, hand: i % 2 ? -1 : 1, dirX: dx, dirY: dy,
           reach: (a.range ?? 80) * area * scale, radius: (a.size ?? 6) * area * scale, life: 0.24,
-          dmg, knockback: kb || 60, effects: a.effects, color, texture: 'white', tipTexture: a.texture ?? 'fist',
+          dmg, knockback: kb || 60, effects: a.effects, color, texture: arm, tipTexture: a.texture ?? 'fist',
         });
       });
       break;
+    }
 
     case 'cone': {
       const spawnCone = (dx: number, dy: number) =>

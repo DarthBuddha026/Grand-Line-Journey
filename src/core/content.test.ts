@@ -5,6 +5,7 @@ import { ModBlock } from './stats';
 import { Loadout } from './loadout';
 import { Rng } from './rng';
 import { ALLIANCES, CHARACTERS, ITEMS, LIMITS, MAIN_ATTACKS, WEAPONS } from '../data';
+import type { Choice } from './loadout';
 
 describe('merge', () => {
   it('deep-merges objects and replaces arrays', () => {
@@ -89,10 +90,16 @@ describe('Loadout fusion, hold and eliminate', () => {
     for (let i = 0; i < 20; i++) expect(l.rollChoices(pools, new Rng(i), 4).some((c) => c.id === 'rankyaku')).toBe(false);
   });
 
-  it('chests apply upgrades directly', () => {
+  it('chest rewards are only rolled (accepting applies them) and never repeat within a chest', () => {
     const l = new Loadout('m', pools.skills);
-    const got = l.rollChest(pools, new Rng(1), 3);
-    expect(got).toHaveLength(3);
+    const offered: Choice[] = [];
+    for (let i = 0; i < 3; i++) offered.push(l.rollChestReward(pools, new Rng(1), offered));
+    expect(new Set(offered.map((c) => `${c.kind}:${c.id}`)).size).toBe(3);
+    expect(l.mainAttack.level + l.weapons.size + l.items.size).toBe(1); // nothing applied yet
+    l.apply(offered[0]);
     expect(l.mainAttack.level + l.weapons.size + l.items.size + [...l.skills.values()].reduce((a, b) => a + b, 0)).toBeGreaterThan(1);
+    // Every option already offered: a passed one comes back rather than a Berries boost.
+    const all = l.candidates(pools);
+    expect(all).toContainEqual(l.rollChestReward(pools, new Rng(2), all));
   });
 });

@@ -87,6 +87,26 @@ export function generatePlaceholderTextures(scene: Phaser.Scene): void {
     g.fillStyle(0xffffff, 0.5).fillEllipse(6.8, 2.4, 2.2, 1);
   });
 
+  // Horseshoe magnet pickup: red U with silver tips.
+  make('magnet', 10, 11, () => {
+    const u = (w: number, c: number) => {
+      g.lineStyle(w, c);
+      g.beginPath();
+      g.moveTo(2.6, 1.2);
+      g.lineTo(2.6, 5.8);
+      g.arc(5, 5.8, 2.4, Math.PI, 0, true);
+      g.lineTo(7.4, 1.2);
+      g.strokePath();
+    };
+    u(4.4, INK);
+    u(2.8, 0xe53935);
+    for (const x of [2.6, 7.4]) {
+      g.fillStyle(INK).fillRect(x - 2.1, 0.2, 4.2, 2.8);
+      g.fillStyle(0xe8eef2).fillRect(x - 1.4, 0.8, 2.8, 1.7);
+    }
+    g.fillStyle(0xffffff, 0.6).fillRect(1.9, 3.6, 0.6, 2);
+  });
+
   make('chest', 16, 14, () => {
     g.fillStyle(INK).fillRoundedRect(0, 4, 16, 10, 1.6).fillRoundedRect(0.6, 0, 14.8, 6.4, 2.4);
     g.fillStyle(0x7a4520).fillRoundedRect(0.7, 4.6, 14.6, 8.7, 1.2);
@@ -111,11 +131,28 @@ export function generatePlaceholderTextures(scene: Phaser.Scene): void {
     g.lineStyle(0.6, INK).strokePoints(outer, true, true);
   });
 
+  // Side-view fist pointing right (+x), thumb on top, in the character sprites' style: white +
+  // grey shading so a skin-colour tint keeps the shading, ink outline. Rotated along the punch.
   make('fist', 12, 12, () => {
-    g.fillStyle(INK).fillCircle(6, 6, 6);
-    g.fillStyle(0xffffff).fillCircle(6, 6, 5.2);
-    g.fillStyle(0xe8e8e8).fillCircle(6.6, 6.8, 3.8);
-    g.lineStyle(0.6, INK, 0.6).lineBetween(4, 3.6, 4, 6).lineBetween(6.2, 3.2, 6.2, 5.8).lineBetween(8.4, 3.6, 8.4, 6);
+    const knuckles = [3.6, 5.6, 7.6, 9.4];
+    g.fillStyle(INK).fillRoundedRect(0.6, 1.9, 10.2, 9.2, 3);
+    for (const y of knuckles) g.fillCircle(10.3, y, 1.55);
+    g.fillStyle(0xffffff).fillRoundedRect(1.3, 2.6, 8.8, 7.8, 2.4);
+    for (const y of knuckles) g.fillCircle(10.1, y, 0.95);
+    g.fillStyle(0xd2d2d2).fillRoundedRect(1.3, 7.6, 8.8, 2.8, { tl: 0, tr: 0, bl: 2.4, br: 2.4 }); // shade underneath
+    g.fillStyle(0xd2d2d2).fillCircle(10.1, knuckles[3], 0.95);
+    g.lineStyle(0.5, INK, 0.8);
+    for (const y of [4.6, 6.6, 8.5]) g.lineBetween(7.2, y, 10.6, y); // finger creases
+    // Thumb wrapped over the fingers.
+    g.fillStyle(INK).fillRoundedRect(2.6, 1.2, 6.4, 3.4, 1.7);
+    g.fillStyle(0xffffff).fillRoundedRect(3.2, 1.8, 5.2, 2.2, 1.1);
+  });
+
+  // A stretching rubber arm: a horizontal band (stretched along x), ink edges, a lit top and a shaded underside.
+  make('arm', 16, 8, () => {
+    g.fillStyle(INK).fillRect(0, 0, 16, 8);
+    g.fillStyle(0xffffff).fillRect(0, 1.1, 16, 5.8);
+    g.fillStyle(0xd2d2d2).fillRect(0, 5, 16, 1.9);
   });
 
   make('ring', 64, 64, () => {

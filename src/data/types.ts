@@ -53,6 +53,8 @@ export interface ActionDef {
   spread?: number; // degrees between projectiles / punches
   range?: number;
   size?: number;
+  /** punch: after its first hit, a fist flies on to the nearest unhit enemy, up to this many times */
+  bounce?: number;
   radius?: number;
   arc?: number; // cone arc in degrees
   dirs?: number; // cones/beams in N evenly spaced directions
@@ -102,6 +104,8 @@ export interface WeaponDef {
   color: string;
   /** Alliance weapons are created by fusing two max-level weapons with an anvil. */
   recipe?: [string, string];
+  /** Name at level 7 when the main attack has its own awakening (else "Awakened <name>"). */
+  awakenName?: string;
   levels: WeaponLevel[]; // index 0 = level 1 (after expansion)
 }
 
@@ -149,7 +153,8 @@ export interface CharacterDef {
   lines: string[];
   /** gacha: pulled from the crew's gacha in Crew Quarters (CREWS.pullCost). */
   unlock: { type: 'default' } | { type: 'gacha' } | { type: 'achievement'; id: string };
-  look: { body: string; hair: string; skin?: string; pants?: string; hat?: string; tall?: boolean };
+  /** `size`: how big the character stands in the world (dock, runs) next to the others; default 1. */
+  look: { body: string; hair: string; skin?: string; pants?: string; hat?: string; tall?: boolean; size?: number };
 }
 
 export type EnemyArchetype = 'fodder' | 'fast' | 'tank' | 'ranged' | 'boss';

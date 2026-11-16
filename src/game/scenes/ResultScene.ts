@@ -104,20 +104,20 @@ export class ResultScene extends Phaser.Scene {
 
     // Buttons (enabled after a beat so a death-frame keypress can't skip the poster)
     const caption = `WANTED: ${character.posterName}! Bounty ${formatBounty(outcome.bounty)} Berries after ${formatTime(summary.timeSec)} ${summary.cleared ? "clearing" : "at"} ${stage.name}. Can you beat it? #GrandLineSurvivor`;
-    const back = new Button(this, rx + 118, 660, 236, 56, 'Back to the Sunny', () => this.go('hub'), 'gold');
-    const again = new Button(this, rx + 335, 660, 180, 56, 'Sail again', () => this.go('run', summary), 'sea');
-    const share = new Button(this, rx + 518, 660, 164, 56, 'Share', () => this.share(box, caption), 'sea');
-    this.toast = label(this, rx + 518, 618, '', 13, { color: CSS.goldLight }).setOrigin(0.5);
-    hintRow(this, rx + 300, 704, [['Enter', 'Sunny'], ['R', 'Sail again'], ['S', 'Share']], CSS.dim);
+    const back = new Button(this, rx + 118, 648, 236, 56, 'Main menu', () => this.go('title'), 'gold');
+    const again = new Button(this, rx + 335, 648, 180, 56, 'Sail again', () => this.go('run', summary), 'sea');
+    const share = new Button(this, rx + 518, 648, 164, 56, 'Share', () => this.share(box, caption), 'sea');
+    this.toast = label(this, rx + 518, 606, '', 13, { color: CSS.goldLight }).setOrigin(0.5);
+    hintRow(this, rx + 300, 702, [['Enter', 'Main menu'], ['R', 'Sail again'], ['S', 'Share']], CSS.dim);
     for (const b of [back, again, share]) b.setEnabled(false);
     this.time.delayedCall(900, () => {
       back.setEnabled(true).setFocus(true);
       again.setEnabled(true);
       share.setEnabled(true);
-      this.input.keyboard!.once('keydown-ENTER', () => this.go('hub'));
+      this.input.keyboard!.once('keydown-ENTER', () => this.go('title'));
       this.input.keyboard!.once('keydown-R', () => this.go('run', summary));
       this.input.keyboard!.on('keydown-S', () => this.share(box, caption));
-      this.input.gamepad?.once('down', () => this.go('hub'));
+      this.input.gamepad?.once('down', () => this.go('title'));
     });
   }
 
@@ -144,13 +144,13 @@ export class ResultScene extends Phaser.Scene {
     });
   }
 
-  private go(where: 'hub' | 'run', summary?: RunSummary): void {
+  private go(where: 'title' | 'run', summary?: RunSummary): void {
     if (this.going) return;
     this.going = true;
     this.cameras.main.fadeOut(250, 8, 37, 65);
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
       this.going = false;
-      if (where === 'hub') this.scene.start('hub');
+      if (where === 'title') this.scene.start('title');
       else this.scene.start('run', { characterId: summary!.characterId, stageId: summary!.stageId, mode: this.mode });
     });
   }

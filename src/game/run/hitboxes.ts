@@ -3,6 +3,7 @@ import { Pool, type Poolable } from '../../core/pool';
 import type { HitEffects, StatModifier } from '../../data';
 import { CAPS, DEPTH } from '../../config';
 import type { RunContext } from './context';
+import type { Enemy } from './enemies';
 import { TEX } from '../textures';
 
 /**
@@ -21,9 +22,19 @@ import { TEX } from '../textures';
  *  zone       lingering area that ticks, slows, pulls or buffs (circle)
  *  strike     telegraphed, detonates once after `arm` seconds  (circle)
  */
-export type HitboxMotion = 'linear' | 'boomerang' | 'punch' | 'beam' | 'sweep' | 'cone' | 'pulse' | 'orbit' | 'zone' | 'strike';
+export type HitboxMotion = 'linear' | 'boomerang' | 'punch' | 'beam' | 'sweep' | 'cone' | 'pulse' | 'orbit' | 'zone' | 'strike' | 'fist';
 
 const NO_EFFECTS: HitEffects = {};
+/** Arm/streak thickness: grows with the fist, but much slower, so giant fists keep arm-sized arms. */
+const armWidth = (h: { maxRadius: number }): number => Math.min(h.maxRadius * 0.9, 4 + h.maxRadius * 0.2);
+/** Where a stretching arm leaves the body: the hand, from the player's feet, in world units (front hand; the back hand mirrors x). */
+const HAND = { x: 5, y: 3.5 };
+/** How far a bouncing fist looks for its next enemy. */
+const BOUNCE_RANGE = 150;
+/** Fist phases: reaching out along the aim, bouncing to `target`, pulling back to the player. */
+const OUT = 0;
+const BOUNCING = 1;
+const BACK = 2;
 
 export interface Hitbox extends Poolable {
   motion: HitboxMotion;
@@ -50,6 +61,13 @@ export interface Hitbox extends Poolable {
   dmg: number;
   knockback: number;
   pierce: number;
+  /** fist: enemies left to bounce on to, the phase (OUT/BOUNCING/BACK) and the enemy it's flying at. */
+  bounce: number;
+  phase: number;
+  /** Which hand an arm comes from: 1 front (the side the player faces), -1 back. */
+  hand: 1 | -1;
+  target: Enemy | null;
+  targetId: number;
   hitInterval: number;
   radialKnock: boolean;
   killWeak: boolean;
@@ -82,6 +100,8 @@ export interface HitboxSpec {
   dmg: number;
   knockback?: number;
   pierce?: number;
+  bounce?: number;
+  hand?: 1 | -1;
   hitInterval?: number;
   radialKnock?: boolean;
   killWeak?: boolean;
@@ -113,7 +133,7 @@ export class HitboxSystem {
     this.pool = new Pool<Hitbox>(CAPS.hitboxes, () => ({
       poolSlot: -1, motion: 'linear', x: 0, y: 0, dirX: 1, dirY: 0, speed: 0, travel: 0, reach: 0, length: 0, radius: 4,
       maxRadius: 4, halfArc: 0, orbitAngle: 0, orbitSpeed: 0, orbitRadius: 0, life: 0, maxLife: 0, arm: 0, armTotal: 0, follow: false,
-      returning: false, dmg: 0, knockback: 0, pierce: -1, hitInterval: 0, radialKnock: false, killWeak: false, color: 0xffffff,
+      returning: false, dmg: 0, knockback: 0, pierce: -1, bounce: 0, phase: OUT, hand: 1, target: null, targetId: -1, hitInterval: 0, radialKnock: false, killWeak: false, color: 0xffffff,
       effects: NO_EFFECTS, buff: null, hitIds: [], hitTimes: [],
       sprite: scene.add.image(0, 0, 'white').setDepth(DEPTH.hitbox).setVisible(false),
       tip: scene.add.image(0, 0, 'fist').setDepth(DEPTH.hitbox + 1).setVisible(false),
@@ -151,6 +171,11 @@ export class HitboxSystem {
     h.dmg = s.dmg;
     h.knockback = s.knockback ?? 0;
     h.pierce = s.pierce ?? -1;
+    h.bounce = s.bounce ?? 0;
+    h.phase = OUT;
+    h.hand = s.hand ?? 1;
+    h.target = null;
+    h.targetId = -1;
     h.hitInterval = s.hitInterval ?? 0;
     h.radialKnock = s.radialKnock ?? false;
     h.killWeak = s.killWeak ?? false;
@@ -166,12 +191,16 @@ export class HitboxSystem {
         .setTint(s.color)
         .setAlpha(s.alpha ?? 1)
         .setVisible(true)
-        .setOrigin(s.motion === 'punch' || s.motion === 'beam' || s.motion === 'sweep' ? 0 : 0.5, 0.5)
+        .setOrigin(s.motion === 'punch' || s.motion === 'fist' || s.motion === 'beam' || s.motion === 'sweep' ? 0 : 0.5, 0.5)
         .setRotation(Math.atan2(h.dirY, h.dirX))
         .setFlipX(false);
     }
     h.useTip = !!s.tipTexture;
     if (s.tipTexture) h.tip.setTexture(s.tipTexture).setTint(s.color).setVisible(true).setScale((s.radius * 2) / 12 / TEX);
+    // The back hand's arm goes behind the player's body, the front hand's in front.
+    const back = h.hand === -1;
+    h.sprite.setDepth(back ? DEPTH.player - 0.5 : DEPTH.hitbox);
+    h.tip.setDepth(back ? DEPTH.player - 0.4 : DEPTH.hitbox + 1);
     this.place(h);
     return h;
   }
@@ -256,10 +285,37 @@ export class HitboxSystem {
         break;
       }
       case 'punch': {
-        h.x = p.x;
-        h.y = p.y;
+        h.x = this.handX(h.hand);
+        h.y = this.handY();
         const t = 1 - h.life / h.maxLife;
         h.length = h.reach * (t < 0.5 ? t * 2 : (1 - t) * 2);
+        break;
+      }
+      case 'fist': {
+        // A stretching arm: the fist (h.x, h.y) flies while the arm stays attached to the player.
+        const step = h.speed * dt;
+        if (h.phase === BOUNCING && !(h.target?.alive && h.target.id === h.targetId)) h.phase = BACK; // target died
+        if (h.phase === OUT) {
+          h.reach -= step;
+          if (h.reach <= 0) h.phase = BACK; // hit nothing: pull back
+        } else {
+          const tx = h.phase === BOUNCING ? h.target!.x : this.handX(h.hand);
+          const ty = h.phase === BOUNCING ? h.target!.y : this.handY();
+          const dx = tx - h.x;
+          const dy = ty - h.y;
+          const d = Math.hypot(dx, dy);
+          if (h.phase === BACK && d <= step * 1.5) {
+            h.travel = 0; // back in hand
+            break;
+          }
+          if (d > 0.001) {
+            h.dirX = dx / d;
+            h.dirY = dy / d;
+          }
+        }
+        const move = h.phase === BACK ? step * 1.5 : step;
+        h.x += h.dirX * move;
+        h.y += h.dirY * move;
         break;
       }
       case 'sweep':
@@ -295,13 +351,29 @@ export class HitboxSystem {
   }
 
   private place(h: Hitbox): void {
-    if (h.useTip) h.tip.setPosition(h.x + h.dirX * h.length, h.y + h.dirY * h.length);
+    if (h.useTip) {
+      // The tip faces along the arm (a fist's thumb stays on top either way).
+      const fist = h.motion === 'fist';
+      const a = fist ? Math.atan2(h.y - this.handY(), h.x - this.handX(h.hand)) : Math.atan2(h.dirY, h.dirX);
+      h.tip.setPosition(fist ? h.x : h.x + h.dirX * h.length, fist ? h.y : h.y + h.dirY * h.length).setRotation(a).setFlipY(Math.cos(a) < 0);
+      // A fist starts hand-sized and swells to full size as the arm stretches out.
+      const len = fist ? Math.hypot(h.x - this.handX(h.hand), h.y - this.handY()) : h.length;
+      h.tip.setScale(((h.maxRadius * 2) / 12 / TEX) * Math.min(1, 0.35 + len / 45));
+    }
     if (!h.useSprite) return;
     const s = h.sprite;
     switch (h.motion) {
       case 'punch':
-        s.setPosition(h.x, h.y).setDisplaySize(Math.max(1, h.length), h.maxRadius * 0.9);
+        s.setPosition(h.x, h.y).setDisplaySize(Math.max(1, h.length), armWidth(h));
         break;
+      case 'fist': {
+        const hx = this.handX(h.hand);
+        const hy = this.handY();
+        const dx = h.x - hx;
+        const dy = h.y - hy;
+        s.setPosition(hx, hy).setRotation(Math.atan2(dy, dx)).setDisplaySize(Math.max(1, Math.hypot(dx, dy)), armWidth(h));
+        break;
+      }
       case 'beam': {
         const t = h.life / h.maxLife;
         s.setPosition(h.x, h.y).setDisplaySize(h.length, h.radius * 2 * (0.6 + 0.4 * t)).setAlpha(0.35 + 0.6 * t);
@@ -346,6 +418,61 @@ export class HitboxSystem {
       this.groundGfx.lineStyle(1.5, h.color, 0.8).strokeCircle(h.x, h.y, h.radius);
       this.groundGfx.fillStyle(h.color, 0.15 + 0.25 * t).fillCircle(h.x, h.y, h.radius * t);
     }
+  }
+
+  /** The hand an arm stretches from, following the player's facing and size. */
+  handX(hand: 1 | -1): number {
+    const p = this.ctx.player;
+    return p.x + p.facing * hand * HAND.x * p.scale;
+  }
+
+  handY(): number {
+    const p = this.ctx.player;
+    return p.y - HAND.y * p.scale;
+  }
+
+  /** Whether an arm is out (punch or fist): the player keeps facing the punch until it's back. */
+  armOut(): boolean {
+    for (const h of this.pool.active) if (h.motion === 'fist' || (h.motion === 'punch' && h.sprite.texture.key === 'arm')) return true;
+    return false;
+  }
+
+  /** The hand that's free for a bouncing fist: the front one unless its fist is still out. */
+  freeHand(): 1 | -1 {
+    for (const h of this.pool.active) if (h.motion === 'fist' && h.hand === 1) return -1;
+    return 1;
+  }
+
+  /** Fists currently out (a hand can't punch again until its fist is back). */
+  fistsOut(): number {
+    let n = 0;
+    for (const h of this.pool.active) if (h.motion === 'fist') n++;
+    return n;
+  }
+
+  /** A fist just hit `from`: on to the nearest enemy it hasn't hit, or back to the player when out of bounces or targets. */
+  private nextBounce(h: Hitbox, from: Enemy): void {
+    let best: Enemy | null = null;
+    let bestD = BOUNCE_RANGE * BOUNCE_RANGE;
+    if (h.bounce > 0) {
+      for (const e of this.ctx.enemies.pool.active) {
+        if (!e.alive || e === from || h.hitIds.includes(e.id)) continue;
+        const d = (e.x - from.x) ** 2 + (e.y - from.y) ** 2;
+        if (d < bestD) {
+          bestD = d;
+          best = e;
+        }
+      }
+    }
+    if (!best) {
+      h.phase = BACK;
+      h.target = null;
+      return;
+    }
+    h.bounce--;
+    h.phase = BOUNCING;
+    h.target = best;
+    h.targetId = best.id;
   }
 
   private collide(h: Hitbox): void {
@@ -410,6 +537,10 @@ export class HitboxSystem {
         force = h.effects.pull;
       }
       this.ctx.hitEnemy(e, h.dmg, kx, ky, force, h.effects, h.killWeak);
+      if (h.motion === 'fist' && h.phase !== BACK) {
+        this.nextBounce(h, e);
+        return;
+      }
       if (h.pierce > 0) {
         h.pierce--;
         if (h.pierce === 0) return;

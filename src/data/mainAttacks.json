@@ -1,6 +1,8 @@
 [
   { "id": "gomu_pistol", "name": "Gomu Gomu Pistol", "desc": "A stretching punch toward your aim.", "color": "#f0c9a0", "cooldown": 1.1,
-    "action": { "type": "punch", "count": 1, "spread": 18, "range": 80, "size": 6, "dmg": 10, "knockback": 60 } },
+    "action": { "type": "punch", "count": 1, "spread": 18, "range": 80, "size": 6, "dmg": 10, "knockback": 60 },
+    "awaken": { "name": "Gear Fourth", "desc": "Gear Fourth! Two giant stretching fists. Each bounces on to up to 10 more enemies, then snaps back before punching again.",
+      "action": { "count": 2, "size": 15, "range": 150, "spread": 28, "knockback": 110, "bounce": 10, "speed": 480 } } },
   { "id": "oni_giri", "name": "Three Sword Style: Oni Giri", "desc": "A wide forward slash.", "color": "#e0e0e0", "cooldown": 1.2,
     "action": { "type": "cone", "radius": 48, "arc": 110, "dmg": 13, "knockback": 50 } },
   { "id": "thunderbolt_tempo", "name": "Thunderbolt Tempo", "desc": "Lightning strikes the nearest enemy.", "color": "#ffe066", "cooldown": 1.3,

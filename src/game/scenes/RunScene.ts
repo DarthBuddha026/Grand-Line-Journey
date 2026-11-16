@@ -28,6 +28,7 @@ import { itemIcon, skillIcon, weaponIcon } from '../icons';
 
 /** How big the captain is drawn in a run (visual only: the hitbox is unchanged). */
 const PLAYER_DRAW_SCALE = 1.5;
+const AIM_PINK = 0xe8399a;
 
 export interface ChoiceInfo {
   name: string;
@@ -36,10 +37,16 @@ export interface ChoiceInfo {
   icon: string;
   isNew: boolean;
   maxLevel: number;
+  /** This pick takes an attack to level 7 (see awaken in data/index.ts). */
+  awakened?: boolean;
 }
 
 /** Berries per enemy drop: base, +1 every everySec of run time (3 at the start, 7 at 10:00, 11 at 20:00). */
 const BERRY_DROP = { base: 3, everySec: 150 } as const;
+/** Chance an enemy drops a magnet, which pulls every XP orb, Berry and meat on the field to the player. */
+const MAGNET_CHANCE = 0.003;
+/** Multiplies the chance of every special drop: meat, magnets and elites (which drop treasure chests). */
+const SPECIAL_DROP_MUL = 2;
 
 export type RunState = 'playing' | 'levelup' | 'chest' | 'anvil' | 'cleared' | 'paused' | 'ended';
 
@@ -96,7 +103,10 @@ export class RunScene extends Phaser.Scene implements RunContext {
   specialCharge = 0;
   pendingLevelUps = 0;
   choices: Choice[] = [];
+  /** Treasure: rewards revealed one at a time (`chestResults`), each accepted or passed (`chestTaken`). */
   chestResults: Choice[] = [];
+  chestTaken: boolean[] = [];
+  chestTotal = 0;
   anvilOptions: AnvilOption[] = [];
   banner: Banner | null = null;
   rerolls = 0;
@@ -122,6 +132,10 @@ export class RunScene extends Phaser.Scene implements RunContext {
   private nearestDir = { x: 0, y: 0 };
   private readonly blockOut = { x: 0, y: 0 };
   private aimOut = { x: 1, y: 0 };
+  /** The aim arrow around the captain, and the crosshair that replaces the cursor in mouse aim. */
+  private aimGfx!: Phaser.GameObjects.Graphics;
+  private crossGfx!: Phaser.GameObjects.Graphics;
+  private cursorHidden = false;
   private buffs = new Map<string, { t: number; invuln: boolean }>();
   private scheduled: { t: number; fn: () => void }[] = [];
   private transform: { remaining: number; every: number; timer: number; action?: ActionDef; invuln: boolean; fired: number } | null = null;
@@ -152,6 +166,8 @@ export class RunScene extends Phaser.Scene implements RunContext {
     this.xp = this.kills = this.berries = this.specialCharge = this.pendingLevelUps = 0;
     this.choices = [];
     this.chestResults = [];
+    this.chestTaken = [];
+    this.chestTotal = 0;
     this.anvilOptions = [];
     this.banner = null;
     this.cleared = false;
@@ -207,7 +223,11 @@ export class RunScene extends Phaser.Scene implements RunContext {
     cam.startFollow(this.player.sprite, false, 0.12, 0.12);
     this.playerFrames = characterFrames(this, c.id); // hand-drawn animation frames, if this character has any
 
-    this.controls = new InputController(this);
+    this.controls = new InputController(this, () => this.state === 'playing');
+    this.aimGfx = this.add.graphics().setDepth(DEPTH.player + 1);
+    this.crossGfx = this.add.graphics().setDepth(DEPTH.damage + 1);
+    this.cursorHidden = false;
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.input.setDefaultCursor('default'));
     this.fx = new FxSystem(this, () => this.player);
     this.enemies = new EnemySystem(this, {
       onKill: (e) => this.onEnemyKilled(e),
@@ -448,6 +468,46 @@ export class RunScene extends Phaser.Scene implements RunContext {
     return metaCounts(this.save).revives + this.mods.get('revives') - this.revivesUsed;
   }
 
+  // ---- Aim pointer -----------------------------------------------------------------
+
+  /** A small arrow orbiting the captain, pointing where the main attack goes (pink in mouse aim). */
+  private drawAimArrow(): void {
+    const p = this.player;
+    const a = this.controls.aim;
+    const cx = p.x;
+    const cy = p.y - 6 * p.scale; // body centre (the sprite's origin is at its feet)
+    const r = 19 * p.scale;
+    const nx = -a.y;
+    const ny = a.x;
+    const tip = { x: cx + a.x * (r + 11), y: cy + a.y * (r + 11) };
+    const pts = [tip, { x: cx + a.x * r + nx * 4.5, y: cy + a.y * r + ny * 4.5 }, { x: cx + a.x * r - nx * 4.5, y: cy + a.y * r - ny * 4.5 }];
+    const mouse = this.controls.aimMode === 'mouse';
+    this.aimGfx.clear()
+      .fillStyle(mouse ? AIM_PINK : 0xffffff).fillPoints(pts, true)
+      .lineStyle(1.5, mouse ? 0x7a1048 : 0x1e6fd9).strokePoints(pts, true, true);
+  }
+
+  /** In mouse aim the OS cursor is hidden and replaced by four pink arrows around the pointer. */
+  private drawCrosshair(): void {
+    const on = this.controls.aimMode === 'mouse' && this.state === 'playing' && !this.controls.isTouch;
+    if (on !== this.cursorHidden) {
+      this.cursorHidden = on;
+      this.input.setDefaultCursor(on ? 'none' : 'default');
+    }
+    const g = this.crossGfx.clear();
+    if (!on) return;
+    const ptr = this.input.activePointer;
+    const w = this.cameras.main.getWorldPoint(ptr.x, ptr.y);
+    for (let i = 0; i < 4; i++) {
+      const dx = Math.round(Math.cos((i * Math.PI) / 2));
+      const dy = Math.round(Math.sin((i * Math.PI) / 2));
+      // Each arrow sits outside the centre and points in at it.
+      const tip = { x: w.x + dx * 4, y: w.y + dy * 4 };
+      const pts = [tip, { x: w.x + dx * 10 - dy * 4, y: w.y + dy * 10 + dx * 4 }, { x: w.x + dx * 10 + dy * 4, y: w.y + dy * 10 - dx * 4 }];
+      g.fillStyle(AIM_PINK).fillPoints(pts, true).lineStyle(1.2, 0xffffff).strokePoints(pts, true, true);
+    }
+  }
+
   // ---- Frame loop ----------------------------------------------------------------
 
   update(_t: number, deltaMs: number): void {
@@ -464,6 +524,7 @@ export class RunScene extends Phaser.Scene implements RunContext {
       this.banner.t -= dt;
       if (this.banner.t <= 0) this.banner = null;
     }
+    this.drawCrosshair();
     if (this.state !== 'playing') return;
 
     this.runTime += dt;
@@ -516,7 +577,7 @@ export class RunScene extends Phaser.Scene implements RunContext {
     const rateMul = (1 + this.mods.get('spawnMul')) * (this.bosses.bosses.length ? 0.5 : 1);
     const n = this.director.update(this.runTime, dt, this.enemies.count, this.spawnBuf, rateMul);
     const hpScale = this.director.hpScale(this.runTime);
-    const eliteChance = this.stage.eliteChance * (1 + this.mods.get('chestRate') + this.mods.get('luck'));
+    const eliteChance = this.stage.eliteChance * SPECIAL_DROP_MUL * (1 + this.mods.get('chestRate') + this.mods.get('luck'));
     for (let i = 0; i < n; i++) {
       const req = this.spawnBuf[i];
       const e = this.enemies.spawn(req, hpScale, eliteChance);
@@ -560,7 +621,7 @@ export class RunScene extends Phaser.Scene implements RunContext {
       p.x = this.blockOut.x; // blocks: slide along their edges
       p.y = this.blockOut.y;
     }
-    if (mx !== 0) p.facing = mx < 0 ? -1 : 1;
+    if (mx !== 0 && !this.hitboxes.armOut()) p.facing = mx < 0 ? -1 : 1; // keep facing a punch until the arm is back
     if (p.iframes > 0) p.iframes -= dt;
 
     // Regen and shield
@@ -581,10 +642,11 @@ export class RunScene extends Phaser.Scene implements RunContext {
     p.sprite
       .setPosition(p.x, p.y)
       .setFlipX(p.facing < 0)
-      .setScale((p.scale * PLAYER_DRAW_SCALE) / CHAR_TEX)
+      .setScale((p.scale * PLAYER_DRAW_SCALE * (this.character.look.size ?? 1)) / CHAR_TEX)
       .setAlpha(blink ? 0.4 : p.sleepT > 0 ? 0.7 : 1)
       .setAngle(p.sleepT > 0 ? 80 : 0);
     p.shadow.setPosition(p.x, p.y + 2).setScale((p.scale * PLAYER_DRAW_SCALE) / TEX);
+    this.drawAimArrow();
     if (invuln) p.sprite.setTint(this.runTime % 0.3 < 0.15 ? 0xffffff : 0xfff2b0);
     else p.sprite.clearTint();
 
@@ -711,7 +773,8 @@ export class RunScene extends Phaser.Scene implements RunContext {
     const luck = 1 + this.mods.get('luck');
     this.pickups.dropXp(e.x, e.y, d.xp * (e.elite ? 5 : 1));
     if (this.rng.chance((d.berryChance ?? 0) * luck)) this.pickups.drop('berry', e.x, e.y, BERRY_DROP.base + Math.floor(this.runTime / BERRY_DROP.everySec));
-    if (this.rng.chance((d.meatChance ?? 0) * luck)) this.pickups.drop('meat', e.x, e.y, 0.2);
+    if (this.rng.chance((d.meatChance ?? 0) * SPECIAL_DROP_MUL * luck)) this.pickups.drop('meat', e.x, e.y, 0.2);
+    if (this.rng.chance(MAGNET_CHANCE * SPECIAL_DROP_MUL * luck)) this.pickups.drop('magnet', e.x, e.y, 0);
     if (e.elite) this.pickups.drop('chest', e.x, e.y, 1);
     if (e.boss) this.onBossKilled(e);
   }
@@ -776,6 +839,10 @@ export class RunScene extends Phaser.Scene implements RunContext {
         this.fx.burst(this.player.x, this.player.y, 4, 20, 0.3, 0x69f0ae, 'ring', true);
         break;
       }
+      case 'magnet':
+        this.pickups.magnetAll();
+        this.fx.burst(this.player.x, this.player.y, 10, 160, 0.5, 0xff5252, 'ring', true, 0.8);
+        break;
       case 'chest':
         this.openChest();
         break;
@@ -855,14 +922,23 @@ export class RunScene extends Phaser.Scene implements RunContext {
     let n = 1;
     if (this.rng.chance(0.3 + m.get('chestExtra'))) n++;
     if (this.rng.chance(m.get('chestRarity') + m.get('luck') * 0.5)) n++;
-    n = Math.min(3, n);
-    this.chestResults = this.loadout.rollChest(this.pools, this.rng, n);
-    for (const c of this.chestResults) this.syncChoice(c);
+    this.chestTotal = Math.min(3, n);
+    this.chestResults = [this.loadout.rollChestReward(this.pools, this.rng)];
+    this.chestTaken = [];
     this.state = 'chest';
   }
 
-  closeChest(): void {
-    if (this.state === 'chest') this.state = 'playing';
+  /** Accept (apply) or pass the chest reward on offer, then reveal the next one; the chest closes after the last. */
+  chestDecide(take: boolean): void {
+    const c = this.chestResults[this.chestTaken.length];
+    if (this.state !== 'chest' || !c) return;
+    if (take) {
+      this.loadout.apply(c);
+      this.syncChoice(c);
+    }
+    this.chestTaken.push(take);
+    if (this.chestTaken.length < this.chestTotal) this.chestResults.push(this.loadout.rollChestReward(this.pools, this.rng, this.chestResults));
+    else this.state = 'playing';
   }
 
   private openAnvil(): void {
@@ -912,6 +988,11 @@ export class RunScene extends Phaser.Scene implements RunContext {
   /** Make a loadout change take effect (runtimes, stats, mods). */
   private syncChoice(c: Choice): void {
     const oldMax = this.stats.get('maxHp');
+    const info = c.kind === 'mainAttack' || c.kind === 'weapon' ? this.describe(c) : null;
+    if (info?.awakened) {
+      this.showBanner(`${info.name.toUpperCase()}!`, 'Your attack awakened: far stronger!', '#ffd54f', 2.4);
+      this.fx.burst(this.player.x, this.player.y, 14, 220, 0.7, 0xffd54f, 'disc', true, 0.8);
+    }
     switch (c.kind) {
       case 'mainAttack':
         this.main.level = c.level;
@@ -946,11 +1027,13 @@ export class RunScene extends Phaser.Scene implements RunContext {
     switch (c.kind) {
       case 'mainAttack': {
         const d = MAIN_ATTACKS.get(c.id)!;
-        return { name: d.name, desc: d.levels[c.level - 1].desc, color: hex(d.color), icon: weaponIcon(d), isNew: false, maxLevel: LIMITS.mainAttackMaxLevel };
+        const awakened = c.level === LIMITS.mainAttackMaxLevel;
+        return { name: awakened ? (d.awakenName ?? `Awakened ${d.name}`) : d.name, desc: d.levels[c.level - 1].desc, color: hex(d.color), icon: weaponIcon(d), isNew: false, maxLevel: LIMITS.mainAttackMaxLevel, awakened };
       }
       case 'weapon': {
         const d = WEAPONS.get(c.id)!;
-        return { name: d.name, desc: c.level === 1 ? d.desc : d.levels[c.level - 1].desc, color: hex(d.color), icon: weaponIcon(d), isNew: c.level === 1, maxLevel: LIMITS.weaponMaxLevel };
+        const awakened = !d.recipe && c.level === LIMITS.weaponMaxLevel;
+        return { name: awakened ? `Awakened ${d.name}` : d.name, desc: c.level === 1 ? d.desc : d.levels[c.level - 1].desc, color: hex(d.color), icon: weaponIcon(d), isNew: c.level === 1, maxLevel: LIMITS.weaponMaxLevel, awakened };
       }
       case 'item': {
         const d = ITEMS.get(c.id)!;

@@ -4,7 +4,7 @@ import { CAPS, DEPTH, ORB_MERGE_THRESHOLD } from '../../config';
 import type { RunContext } from './context';
 import { TEX } from '../textures';
 
-export type PickupKind = 'xp' | 'berry' | 'meat' | 'chest' | 'anvil' | 'haki';
+export type PickupKind = 'xp' | 'berry' | 'meat' | 'magnet' | 'chest' | 'anvil' | 'haki';
 
 export interface Pickup extends Poolable {
   kind: PickupKind;
@@ -26,7 +26,7 @@ const XP_TINTS = [0x6fe3ff, 0x7cf27c, 0xffd447, 0xff7ad9];
 /** Treasure must be walked over: it is never vacuumed up by pickup range. */
 const TREASURE: ReadonlySet<PickupKind> = new Set(['chest', 'anvil', 'haki']);
 
-/** XP orbs, Berries, meat and treasure. XP merges into existing orbs past ORB_MERGE_THRESHOLD. */
+/** XP orbs, Berries, meat, the magnet (pulls them all in) and treasure. XP merges into existing orbs past ORB_MERGE_THRESHOLD. */
 export class PickupSystem {
   readonly pool: Pool<Pickup>;
   private xpCount = 0;

@@ -139,7 +139,7 @@ export class HubScene extends Phaser.Scene {
 
   private makeMate(def: CharacterDef, x: number, y: number, i: number): Mate {
     const shadow = this.add.image(x, y + 2, 'shadow').setScale(3.4 / TEX).setAlpha(0.45);
-    const sprite = this.add.image(x, y, `player_${def.id}`).setOrigin(0.5, 0.99).setScale(SCALE);
+    const sprite = this.add.image(x, y, `player_${def.id}`).setOrigin(0.5, 0.99).setScale(SCALE * (def.look.size ?? 1));
     const m: Mate = { def, sprite, shadow, frames: characterFrames(this, def.id), home: x, x, y, facing: i % 2 ? -1 : 1, line: Math.floor(Math.random() * def.lines.length), target: x, restUntil: this.time.now / 1000 + 1 + Math.random() * 5 };
     if (i >= 0) {
       sprite.setInteractive({ useHandCursor: true }).on('pointerdown', () => {
